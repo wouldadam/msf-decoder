@@ -1,19 +1,28 @@
 <script lang="ts">
-  import Counter from "./lib/Counter.svelte";
+  import Placeholder from "./lib/Placeholder.svelte";
 </script>
 
-<main>
-  <h1>Vite + Svelte</h1>
+<main class="h-full p-4 bg">
+  <div class="flex flex-col lg:flex-row w-full h-full gap-4">
+    <div class="flex flex-col grow gap-y-4">
+      <div>
+        <Placeholder title="Scan" />
+      </div>
+      <div class="h-full w-full">
+        <Placeholder title="Waterfall" />
+      </div>
 
-  <div class="card">
-    <Counter />
+      <div>
+        <Placeholder title="Scope" />
+      </div>
+    </div>
+
+    <div class="flex flex-col grow gap-y-4">
+      <Placeholder title="Source select" />
+      <Placeholder title="Frequency select" />
+      <Placeholder title="Decode" />
+      <Placeholder title="Demod" />
+      <Placeholder title="Advanced" />
+    </div>
   </div>
-
-  <p>
-    Check out <a
-      href="https://github.com/sveltejs/kit#readme"
-      target="_blank"
-      rel="noreferrer">SvelteKit</a
-    >, the official Svelte app framework powered by Vite!
-  </p>
 </main>
