@@ -3,16 +3,17 @@
 
 	// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
 	// "dockerFile": "../Dockerfile",
-    "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:16",
-    
+  "image": "mcr.microsoft.com/vscode/devcontainers/javascript-node:16",
+
 	// Set *default* container specific settings.json values on container create.
 	"settings": {},
-	
+
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"tomoki1207.pdf",
 		"shardulm94.trailing-spaces",
-		"streetsidesoftware.code-spell-checker"
+		"streetsidesoftware.code-spell-checker",
+		"svelte.svelte-vscode"
 	],
 
 	"remoteUser": "node"
