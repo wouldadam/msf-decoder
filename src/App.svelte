@@ -1,14 +1,16 @@
 <script lang="ts">
   import Placeholder from "./lib/Placeholder.svelte";
+  import Config from "./lib/Config.svelte";
 </script>
 
-<main class="h-full p-4 bg">
+<main class="h-full p-4">
   <div class="flex flex-col lg:flex-row w-full h-full gap-4">
     <div class="flex flex-col grow gap-y-4">
       <div>
         <Placeholder title="Scan" />
       </div>
-      <div class="h-full w-full">
+
+      <div class="h-full">
         <Placeholder title="Waterfall" />
       </div>
 
@@ -18,11 +20,21 @@
     </div>
 
     <div class="flex flex-col grow gap-y-4">
-      <Placeholder title="Source select" />
-      <Placeholder title="Frequency select" />
-      <Placeholder title="Decode" />
-      <Placeholder title="Demod" />
-      <Placeholder title="Advanced" />
+      <div>
+        <Config />
+      </div>
+
+      <div class="h-full">
+        <Placeholder title="Decode" />
+      </div>
+
+      <div>
+        <Placeholder title="Demod" />
+      </div>
+
+      <div>
+        <Placeholder title="Advanced" />
+      </div>
     </div>
   </div>
 </main>
