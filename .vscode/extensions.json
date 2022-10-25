@@ -3,6 +3,7 @@
       "tomoki1207.pdf",
       "shardulm94.trailing-spaces",
       "streetsidesoftware.code-spell-checker",
-      "svelte.svelte-vscode"
+      "svelte.svelte-vscode",
+      "esbenp.prettier-vscode"
   ]
 }
