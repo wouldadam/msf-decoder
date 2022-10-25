@@ -6,6 +6,8 @@
   let devices: MediaDeviceInfo[] | null = null;
 
   onMount(async () => {
+    // We have to call this first otherwise we don't get give permissions
+    // to enumerate the audo devices.
     await navigator.mediaDevices.getUserMedia({ audio: true });
 
     const allDevices = await navigator.mediaDevices.enumerateDevices();
@@ -13,6 +15,12 @@
   });
 </script>
 
+<!--
+  @component
+  Allows configuration of the msf decoder inputs by the user.
+
+  The config is stored in the svelte stores in config.ts.
+-->
 <div class="card w-full h-full bg-base-200 shadow-xl">
   <div class="card-body">
     <h2 class="card-title">Config</h2>
