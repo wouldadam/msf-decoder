@@ -28,7 +28,7 @@
         bind:value={$mediaDevice}
       >
         {#each devices as device}
-          <option value={device.deviceId}>{device.label}</option>
+          <option value={device}>{device.label}</option>
         {/each}
       </select>
     {/if}
