@@ -1,6 +1,7 @@
 <script lang="ts">
   import Placeholder from "./lib/Placeholder.svelte";
   import Config from "./lib/Config.svelte";
+  import Scope from "./lib/Scope.svelte";
 </script>
 
 <main class="h-full p-4">
@@ -15,7 +16,7 @@
       </div>
 
       <div>
-        <Placeholder title="Scope" />
+        <Scope />
       </div>
     </div>
 
