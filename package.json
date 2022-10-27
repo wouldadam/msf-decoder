@@ -28,7 +28,9 @@
       "ts",
       "svelte"
     ],
-    "setupFiles": ["jest-canvas-mock"],
+    "setupFiles": [
+      "jest-canvas-mock"
+    ],
     "setupFilesAfterEnv": [
       "@testing-library/jest-dom/extend-expect"
     ],
@@ -52,6 +54,7 @@
     "svelte-check": "^2.8.1",
     "svelte-jester": "^2.3.2",
     "svelte-preprocess": "^4.10.7",
+    "svelte-resize-observer": "^2.0.0",
     "tailwindcss": "^3.2.1",
     "ts-jest": "^29.0.3",
     "tslib": "^2.4.0",
