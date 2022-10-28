@@ -1,5 +1,5 @@
-import { beforeEach, test, vi } from "vitest";
 import { render, waitFor } from "@testing-library/svelte";
+import { beforeEach, test, vi } from "vitest";
 import { defaultProcessor } from "./Processor";
 import Scope from "./Scope.svelte";
 
@@ -13,7 +13,7 @@ beforeEach(() => {
 test("should render with no analyser", async () => {
   const result = render(Scope);
 
-  const canvas = result.getByTestId("scope-canvas") as HTMLCanvasElement;
+  const canvas = result.getByTestId("chart-canvas") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d");
 
   waitFor(() => expect(ctx.stroke).toBeCalled());
@@ -44,7 +44,7 @@ test("should render with a MediaDevice", async () => {
   };
   const result = render(Scope);
 
-  const canvas = result.getByTestId("scope-canvas") as HTMLCanvasElement;
+  const canvas = result.getByTestId("chart-canvas") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d");
 
   waitFor(() => expect(ctx.stroke).toBeCalled());
