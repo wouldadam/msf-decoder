@@ -1,3 +1,4 @@
+import { vi, expect, test } from "vitest";
 import { render } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { get } from "svelte/store";
@@ -11,12 +12,10 @@ function setupAudioDevices(devices: MediaDeviceInfo[]) {
     });
   }
 
-  global.navigator.mediaDevices.enumerateDevices = jest
+  global.navigator.mediaDevices.enumerateDevices = vi
     .fn()
     .mockResolvedValue(devices);
-  global.navigator.mediaDevices.getUserMedia = jest
-    .fn()
-    .mockResolvedValue(null);
+  global.navigator.mediaDevices.getUserMedia = vi.fn().mockResolvedValue(null);
 }
 
 test("should list available audioinput devices", async () => {
@@ -26,21 +25,21 @@ test("should list available audioinput devices", async () => {
       groupId: "G",
       kind: "audioinput" as MediaDeviceKind,
       label: "Device A",
-      toJSON: jest.fn(),
+      toJSON: vi.fn(),
     },
     {
       deviceId: "F",
       groupId: "G",
       kind: "audiooutput" as MediaDeviceKind,
       label: "Output device",
-      toJSON: jest.fn(),
+      toJSON: vi.fn(),
     },
     {
       deviceId: "B",
       groupId: "G",
       kind: "audioinput" as MediaDeviceKind,
       label: "Device B",
-      toJSON: jest.fn(),
+      toJSON: vi.fn(),
     },
   ];
   setupAudioDevices(devices);

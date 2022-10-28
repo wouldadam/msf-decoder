@@ -1,9 +1,10 @@
+import { beforeEach, test, vi } from "vitest";
 import { render, waitFor } from "@testing-library/svelte";
 import { defaultProcessor } from "./Processor";
 import Scope from "./Scope.svelte";
 
 beforeEach(() => {
-  jest.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
+  window.requestAnimationFrame = vi.fn().mockImplementation((cb) => {
     setTimeout(() => cb(1), 0);
     return 0;
   });
@@ -31,15 +32,15 @@ test("should render with a MediaDevice", async () => {
     numberOfInputs: 1,
     numberOfOutputs: 1,
     context: null,
-    connect: jest.fn(),
-    disconnect: jest.fn(),
-    dispatchEvent: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    getFloatFrequencyData: jest.fn(),
-    getByteFrequencyData: jest.fn(),
-    getFloatTimeDomainData: jest.fn(),
-    getByteTimeDomainData: jest.fn(),
+    connect: vi.fn() as any,
+    disconnect: vi.fn() as any,
+    dispatchEvent: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    getFloatFrequencyData: vi.fn(),
+    getByteFrequencyData: vi.fn(),
+    getFloatTimeDomainData: vi.fn(),
+    getByteTimeDomainData: vi.fn(),
   };
   const result = render(Scope);
 
