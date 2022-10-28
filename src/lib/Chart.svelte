@@ -117,9 +117,11 @@
 -->
 <div class="flex w-full h-full flex-col">
   <div class="flex flex-row grow items-center">
-    <div class="flex h-full flex-col justify-between items-center">
+    <div class="flex h-full w-10 flex-col justify-between items-center">
       <span class="text-xs">{yAxis.maxLabel || ""}</span>
-      <span class="text-xs h-min -rotate-90">{yAxis.label}</span>
+      <span class="text-xs h-min whitespace-nowrap -rotate-90 "
+        >{yAxis.label}</span
+      >
       <span class="text-xs">{yAxis.minLabel || ""}</span>
     </div>
 
