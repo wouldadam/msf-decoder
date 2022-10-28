@@ -136,8 +136,8 @@
   </div>
 
   <div class="flex flex-row justify-between">
-    <span class="text-xs pl-6">{xAxis.minLabel}</span>
+    <span class="text-xs pl-8">{xAxis.minLabel || ""}</span>
     <span class="text-xs">{xAxis.label}</span>
-    <span class="text-xs">{xAxis.maxLabel}</span>
+    <span class="text-xs">{xAxis.maxLabel || ""}</span>
   </div>
 </div>
