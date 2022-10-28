@@ -2,13 +2,14 @@
   import Placeholder from "./lib/Placeholder.svelte";
   import Config from "./lib/Config.svelte";
   import Scope from "./lib/Scope.svelte";
+  import Scan from "./lib/Scan.svelte";
 </script>
 
 <main class="h-full p-4">
   <div class="flex flex-col lg:flex-row w-full h-full gap-4">
     <div class="flex flex-col grow gap-y-4">
       <div>
-        <Placeholder title="Scan" />
+        <Scan />
       </div>
 
       <div class="h-full">
