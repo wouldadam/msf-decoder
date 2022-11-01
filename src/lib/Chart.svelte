@@ -47,8 +47,10 @@
       img = ctx.getImageData(0, 0, canvas.width, canvas.height);
     } catch (e) {}
 
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    canvas.width = canvasContainer.clientWidth;
+    canvas.height = canvasContainer.clientHeight;
+    canvas.style.width = `${canvasContainer.clientWidth}px`;
+    canvas.style.height = `${canvasContainer.clientHeight}px`;
 
     // Scale the canvas based on ratio off CSS/device pixels
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -130,7 +132,7 @@
       <canvas
         width="0"
         height="0"
-        class="w-full h-full"
+        class="fixed"
         data-testid="chart-canvas"
         bind:this={canvas}
       />
