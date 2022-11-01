@@ -39,6 +39,7 @@ class Processor {
     this.analyser = this.context.createAnalyser();
     this.analyser.maxDecibels = 0;
     this.analyser.minDecibels = -150;
+    this.analyser.fftSize = 4096;
     this.source.connect(this.analyser);
   }
 
