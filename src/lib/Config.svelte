@@ -1,7 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
-
-  import { carrierFrequencyHz, mediaDevice } from "./config";
+  import MdPlayArrow from "svelte-icons/md/MdPlayArrow.svelte";
+  import MdStop from "svelte-icons/md/MdStop.svelte";
+  import MdVolumeOff from "svelte-icons/md/MdVolumeOff.svelte";
+  import MdVolumeUp from "svelte-icons/md/MdVolumeUp.svelte";
+  import { audio, carrierFrequencyHz, mediaDevice, playback } from "./config";
 
   let devices: MediaDeviceInfo[] | null = null;
 
@@ -13,6 +16,22 @@
     const allDevices = await navigator.mediaDevices.enumerateDevices();
     devices = allDevices.filter((d) => d.kind === "audioinput");
   });
+
+  function togglePlayback() {
+    if ($playback === "play") {
+      $playback = "pause";
+    } else {
+      $playback = "play";
+    }
+  }
+
+  function toggleAudio() {
+    if ($audio === "on") {
+      $audio = "off";
+    } else {
+      $audio = "on";
+    }
+  }
 </script>
 
 <!--
@@ -52,5 +71,27 @@
       />
       <span>Hz</span>
     </label>
+
+    <div class="flex flex-row grow gap-4 mt-2">
+      <button
+        class="grow btn btn-success"
+        class:btn-error={$playback === "play"}
+        on:click={togglePlayback}
+      >
+        {#if $playback === "play"}
+          <MdStop />
+        {:else}
+          <MdPlayArrow />
+        {/if}
+      </button>
+
+      <button class="btn p-2 pl-3 pr-3" on:click={toggleAudio}>
+        {#if $audio === "on"}
+          <MdVolumeUp />
+        {:else}
+          <MdVolumeOff />
+        {/if}
+      </button>
+    </div>
   </div>
 </div>

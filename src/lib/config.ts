@@ -1,5 +1,5 @@
-import { writable } from "svelte/store";
 import type { Writable } from "svelte/store";
+import { writable } from "svelte/store";
 
 /**
  * The MSF carrier frequency in the input audio.
@@ -11,3 +11,17 @@ export const carrierFrequencyHz = writable(500);
  * The media device that should be used to pull audio from.
  */
 export const mediaDevice: Writable<MediaDeviceInfo | null> = writable(null);
+
+export type PlaybackState = "play" | "pause";
+
+/**
+ * Indicates the current status of playback.
+ */
+export const playback: Writable<PlaybackState> = writable("play");
+
+export type AudioState = "on" | "off";
+
+/**
+ * Indicates if audio is being played.
+ */
+export const audio: Writable<AudioState> = writable("off");

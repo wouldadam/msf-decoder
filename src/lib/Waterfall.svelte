@@ -75,22 +75,24 @@
     lastDrawTime = time;
 
     // Move the current waterfall upwards
-    try {
-      waterfallCtx.fillStyle = bgStyle;
-      const img = waterfallCtx.getImageData(
-        1,
-        0,
-        waterfallCanvas.width - 1,
-        waterfallCanvas.height - 1
-      );
-      waterfallCtx.clearRect(
-        0,
-        0,
-        waterfallCanvas.width,
-        waterfallCanvas.height
-      );
-      waterfallCtx.putImageData(img, 1, -1);
-    } catch (e) {}
+    if (defaultProcessor?.context?.state === "running") {
+      try {
+        waterfallCtx.fillStyle = bgStyle;
+        const img = waterfallCtx.getImageData(
+          1,
+          0,
+          waterfallCanvas.width - 1,
+          waterfallCanvas.height - 1
+        );
+        waterfallCtx.clearRect(
+          0,
+          0,
+          waterfallCanvas.width,
+          waterfallCanvas.height
+        );
+        waterfallCtx.putImageData(img, 1, -1);
+      } catch (e) {}
+    }
 
     drawAxes(waterfallCtx);
     drawLine(waterfallCtx);
