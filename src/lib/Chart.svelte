@@ -135,6 +135,7 @@
         class="fixed"
         data-testid="chart-canvas"
         bind:this={canvas}
+        on:click
       />
     </div>
   </div>

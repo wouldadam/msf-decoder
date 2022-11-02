@@ -2,6 +2,7 @@
   import chroma from "chroma-js";
   import { onMount } from "svelte";
   import SvelteResizeObserver from "svelte-resize-observer";
+  import { carrierFrequencyHz } from "./config";
   import { defaultProcessor } from "./Processor";
 
   export let targetFps: number = 120;
@@ -10,25 +11,33 @@
   const style = getComputedStyle(document.querySelector(":root"));
   const bgStyle = `hsla(${style.getPropertyValue("--b2")})`;
   const axisStyle = `hsla(${style.getPropertyValue("--b1")})`;
+  const carrierStyle = `hsla(${style.getPropertyValue("--a")})`;
   const scale = chroma.cubehelix().scale().domain([0, 255]).correctLightness();
 
   let canvasContainer: HTMLDivElement;
-  let canvas: HTMLCanvasElement;
+  let waterfallCanvas: HTMLCanvasElement;
+  let carrierCanvas: HTMLCanvasElement;
+
+  let waterfallCtx: CanvasRenderingContext2D | null;
+  let carrierCtx: CanvasRenderingContext2D | null;
 
   let lastDrawTime = 0;
   let frame: number | null = null;
-  let ctx: CanvasRenderingContext2D | null;
 
   let timeMax = 1;
 
   let buffer: Uint8Array | null = null;
-  let freqMax = 1;
+  let freqMax = $carrierFrequencyHz * 2;
 
   onMount(() => {
-    ctx = canvas.getContext("2d", {
+    waterfallCtx = waterfallCanvas.getContext("2d", {
       willReadFrequently: true,
     });
-    ctx.imageSmoothingEnabled = false;
+    waterfallCtx.imageSmoothingEnabled = false;
+
+    carrierCtx = carrierCanvas.getContext("2d", {
+      willReadFrequently: true,
+    });
 
     frame = requestAnimationFrame(draw);
 
@@ -38,13 +47,19 @@
   });
 
   function onResize() {
-    canvas.width = canvasContainer.clientWidth;
-    canvas.height = canvasContainer.clientHeight;
-    canvas.style.width = `${canvasContainer.clientWidth}px`;
-    canvas.style.height = `${canvasContainer.clientHeight}px`;
+    waterfallCanvas.width = canvasContainer.clientWidth;
+    waterfallCanvas.height = canvasContainer.clientHeight;
+    waterfallCanvas.style.width = `${canvasContainer.clientWidth}px`;
+    waterfallCanvas.style.height = `${canvasContainer.clientHeight}px`;
+
+    carrierCanvas.width = canvasContainer.clientWidth;
+    carrierCanvas.height = canvasContainer.clientHeight;
+    carrierCanvas.style.width = `${canvasContainer.clientWidth}px`;
+    carrierCanvas.style.height = `${canvasContainer.clientHeight}px`;
 
     // Scale the canvas based on ratio off CSS/device pixels
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    waterfallCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    carrierCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
     draw(lastDrawTime + frameRateMs);
   }
@@ -60,19 +75,32 @@
     lastDrawTime = time;
 
     // Move the current waterfall upwards
-    ctx.fillStyle = bgStyle;
-    const img = ctx.getImageData(1, 0, canvas.width - 1, canvas.height - 1);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.putImageData(img, 1, -1);
+    try {
+      waterfallCtx.fillStyle = bgStyle;
+      const img = waterfallCtx.getImageData(
+        1,
+        0,
+        waterfallCanvas.width - 1,
+        waterfallCanvas.height - 1
+      );
+      waterfallCtx.clearRect(
+        0,
+        0,
+        waterfallCanvas.width,
+        waterfallCanvas.height
+      );
+      waterfallCtx.putImageData(img, 1, -1);
+    } catch (e) {}
 
-    drawAxes(ctx);
-    drawLine(ctx);
+    drawAxes(waterfallCtx);
+    drawLine(waterfallCtx);
+    drawCarrier(carrierCtx);
   }
 
   /** Draw the axes on the given canvas. */
   function drawAxes(ctx: CanvasRenderingContext2D) {
-    const width = canvas.width / window.devicePixelRatio;
-    const height = canvas.height / window.devicePixelRatio;
+    const width = ctx.canvas.width / window.devicePixelRatio;
+    const height = ctx.canvas.height / window.devicePixelRatio;
 
     ctx.beginPath();
     ctx.lineWidth = 1;
@@ -93,9 +121,6 @@
   function drawLine(ctx: CanvasRenderingContext2D) {
     const width = ctx.canvas.width / window.devicePixelRatio;
     const height = ctx.canvas.height / window.devicePixelRatio;
-
-    let min = Number.MAX_VALUE;
-    let max = Number.MIN_VALUE;
 
     ctx.imageSmoothingEnabled = false;
 
@@ -122,12 +147,32 @@
 
         ctx.stroke();
 
-        min = Math.min(min, buffer[i]);
-        max = Math.max(max, buffer[i]);
-
         x += sliceWidth;
       }
     }
+  }
+
+  function drawCarrier(ctx: CanvasRenderingContext2D) {
+    const width = ctx.canvas.width / window.devicePixelRatio;
+    const height = ctx.canvas.height / window.devicePixelRatio;
+
+    const freqPerPx = freqMax / width;
+    const x = $carrierFrequencyHz / freqPerPx;
+
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    ctx.strokeStyle = carrierStyle;
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height - 1);
+    ctx.stroke();
+  }
+
+  function onClick(e: MouseEvent) {
+    const freqPerPx = freqMax / carrierCtx.canvas.width;
+    $carrierFrequencyHz = Math.round(freqPerPx * e.offsetX);
   }
 </script>
 
@@ -152,7 +197,16 @@
             height="0"
             class="fixed"
             data-testid="waterfall-canvas"
-            bind:this={canvas}
+            bind:this={waterfallCanvas}
+          />
+
+          <canvas
+            width="0"
+            height="0"
+            class="fixed"
+            data-testid="carrier-canvas"
+            bind:this={carrierCanvas}
+            on:click={onClick}
           />
         </div>
       </div>

@@ -1,15 +1,17 @@
 <script lang="ts">
   import Chart from "./Chart.svelte";
+  import { carrierFrequencyHz } from "./config";
   import { defaultProcessor } from "./Processor";
 
   const style = getComputedStyle(document.querySelector(":root"));
   const lineStyle = `hsla(${style.getPropertyValue("--p")})`;
+  const carrierStyle = `hsla(${style.getPropertyValue("--a")})`;
 
   const sampleMin = 0;
   const sampleMax = 255;
 
   let buffer: Uint8Array | null = null;
-  let freqMax = 1;
+  let freqMax = $carrierFrequencyHz * 2;
   let dBMin = -100;
   let dBMax = -30;
 
@@ -61,6 +63,32 @@
     }
 
     ctx.stroke();
+
+    drawCarrier(ctx);
+  }
+
+  function drawCarrier(ctx: CanvasRenderingContext2D) {
+    const width = ctx.canvas.width / window.devicePixelRatio;
+    const height = ctx.canvas.height / window.devicePixelRatio;
+
+    const freqPerPx = freqMax / width;
+    const x = $carrierFrequencyHz / freqPerPx;
+
+    ctx.strokeStyle = carrierStyle;
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height - 1);
+    ctx.stroke();
+  }
+
+  function onClick(e: MouseEvent) {
+    if (e.target instanceof HTMLCanvasElement) {
+      const width = e.target.width;
+      const freqPerPx = freqMax / width;
+      $carrierFrequencyHz = Math.round(freqPerPx * e.offsetX);
+    }
   }
 </script>
 
@@ -84,6 +112,7 @@
         minLabel: dBMin.toFixed(0),
         maxLabel: dBMax.toFixed(0),
       }}
+      on:click={onClick}
     />
   </div>
 </div>
