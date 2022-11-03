@@ -19,9 +19,14 @@ export type PlaybackState = "play" | "pause";
  */
 export const playback: Writable<PlaybackState> = writable("play");
 
-export type AudioState = "on" | "off";
+export type OnOffState = "on" | "off";
 
 /**
  * Indicates if audio is being played.
  */
-export const audio: Writable<AudioState> = writable("off");
+export const audio: Writable<OnOffState> = writable("off");
+
+/**
+ * Indicates if filtered audio data is displayed.
+ */
+export const displayFilter: Writable<OnOffState> = writable("off");

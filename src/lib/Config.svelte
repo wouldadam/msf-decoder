@@ -1,10 +1,19 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import MdGraphicEq from "svelte-icons/md/MdGraphicEq.svelte";
   import MdPlayArrow from "svelte-icons/md/MdPlayArrow.svelte";
   import MdStop from "svelte-icons/md/MdStop.svelte";
   import MdVolumeOff from "svelte-icons/md/MdVolumeOff.svelte";
   import MdVolumeUp from "svelte-icons/md/MdVolumeUp.svelte";
-  import { audio, carrierFrequencyHz, mediaDevice, playback } from "./config";
+  import { get, type Writable } from "svelte/store";
+  import {
+    audio,
+    carrierFrequencyHz,
+    displayFilter,
+    mediaDevice,
+    playback,
+    type OnOffState,
+  } from "./config";
 
   let devices: MediaDeviceInfo[] | null = null;
 
@@ -25,11 +34,11 @@
     }
   }
 
-  function toggleAudio() {
-    if ($audio === "on") {
-      $audio = "off";
+  function toggleOnOffState(state: Writable<OnOffState>) {
+    if (get(state) === "on") {
+      state.set("off");
     } else {
-      $audio = "on";
+      state.set("on");
     }
   }
 </script>
@@ -72,7 +81,7 @@
       <span>Hz</span>
     </label>
 
-    <div class="flex flex-row grow gap-4 mt-2">
+    <div class="flex flex-row grow gap-2 mt-2">
       <button
         class="grow btn btn-success"
         class:btn-error={$playback === "play"}
@@ -85,7 +94,18 @@
         {/if}
       </button>
 
-      <button class="btn p-2 pl-3 pr-3" on:click={toggleAudio}>
+      <button
+        class="btn p-2 pl-3 pr-3"
+        class:btn-info={$displayFilter === "on"}
+        on:click={() => toggleOnOffState(displayFilter)}
+      >
+        <MdGraphicEq />
+      </button>
+
+      <button
+        class="btn p-2 pl-3 pr-3"
+        on:click={() => toggleOnOffState(audio)}
+      >
         {#if $audio === "on"}
           <MdVolumeUp />
         {:else}
