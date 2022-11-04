@@ -1,40 +1,34 @@
 import { get, type Readable, type Unsubscriber } from "svelte/store";
-import {
-  audio,
-  carrierFrequencyHz,
-  displayFilter,
-  mediaDevice,
-  playback,
-  type OnOffState,
-  type PlaybackState,
-} from "./config";
+import type { OnOffState, PlaybackState } from "./config";
+import testProcessorUrl from "./TestProcessor.ts?url";
 
 /**
  * Manages the processing of a selected audio stream.
  */
-class Processor {
-  private unsubMedia: Unsubscriber;
+export class Processor {
+  private unsubAudioSource: Unsubscriber;
   private unsubCarrierFrequency: Unsubscriber;
   private unsubPlayback: Unsubscriber;
   private unsubAudio: Unsubscriber;
   private unsubDisplayFilter: Unsubscriber;
 
-  private mediaDevice?: MediaDeviceInfo;
   private stream?: MediaStream;
-  private source?: MediaStreamAudioSourceNode;
-  private filter: BiquadFilterNode;
+  private source?: MediaStreamAudioSourceNode | AudioBufferSourceNode;
+  private filter?: BiquadFilterNode;
 
   public context?: AudioContext;
   public analyser?: AnalyserNode;
 
   constructor(
-    private mediaDeviceStore: Readable<MediaDeviceInfo | null>,
+    private audioSourceStore: Readable<MediaDeviceInfo | File | null>,
     private carrierFrequencyStore: Readable<number>,
     private playbackStore: Readable<PlaybackState>,
     private audioStore: Readable<OnOffState>,
     private displayFilterStore: Readable<OnOffState>
   ) {
-    this.unsubMedia = mediaDeviceStore.subscribe(this.onMediaChange);
+    this.unsubAudioSource = audioSourceStore.subscribe(
+      this.onAudioSourceChange
+    );
     this.unsubCarrierFrequency = carrierFrequencyStore.subscribe(
       this.onCarrierFrequencyChange
     );
@@ -47,28 +41,72 @@ class Processor {
 
   /** Releases resources. The Processor will no longer be usable. */
   public close() {
-    this.unsubMedia();
+    this.unsubAudioSource();
     this.unsubCarrierFrequency();
     this.unsubPlayback();
     this.unsubAudio();
     this.unsubDisplayFilter();
-    this.source.disconnect();
+
+    this.stop();
+  }
+
+  /** Starts the Processor playing. */
+  public start() {
+    this.stop();
+    this.init();
+  }
+
+  /** Stops any current playback. */
+  public stop() {
+    this?.analyser?.disconnect();
+    this?.filter?.disconnect();
+
+    if (this.source instanceof AudioBufferSourceNode) {
+      this.source.stop();
+    }
+
+    this?.source?.disconnect();
+    this?.context?.close();
+
+    this.analyser = null;
+    this.filter = null;
+    this.source = null;
+    this.stream = null;
+    this.context = null;
   }
 
   /** Initializes the processor for the first time. */
-  private async init(mediaDevice: MediaDeviceInfo) {
-    this.mediaDevice = mediaDevice;
+  private async init() {
+    this.stop();
+
+    const audioSource = get(this.audioSourceStore);
+    if (!audioSource) {
+      return;
+    }
+
     this.context = new AudioContext();
+    this.context.audioWorklet.addModule(testProcessorUrl);
 
     if (get(this.playbackStore) === "pause") {
       this.context.suspend();
     }
 
-    this.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { deviceId: mediaDevice.deviceId },
-      video: false,
-    });
-    this.source = this.context.createMediaStreamSource(this.stream);
+    if (audioSource instanceof File) {
+      const buffer = await audioSource.arrayBuffer();
+      const audioBuffer = await this.context.decodeAudioData(buffer);
+      this.source = this.context.createBufferSource();
+      this.source.buffer = audioBuffer;
+      this.source.loop = true;
+      this.source.start();
+    } else {
+      this.stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: audioSource.deviceId },
+        video: false,
+      });
+
+      this.source = this.context.createMediaStreamSource(this.stream);
+    }
+
     if (get(this.audioStore) === "on") {
       this.source.connect(this.context.destination);
     }
@@ -87,7 +125,7 @@ class Processor {
     this.analyser.fftSize = 4096;
     this.analyser.smoothingTimeConstant = 0;
 
-    if (get(displayFilter) == "on") {
+    if (get(this.displayFilterStore) == "on") {
       this.source.connect(this.filter);
       this.filter.connect(this.analyser);
     } else {
@@ -96,38 +134,8 @@ class Processor {
     }
   }
 
-  /** Changes the current media device. */
-  private async change(mediaDevice: MediaDeviceInfo) {
-    // Same as current device
-    if (this.mediaDevice.deviceId === mediaDevice.deviceId) {
-      return;
-    }
-
-    if (mediaDevice) {
-      // Disconnect old source
-      this.source.disconnect();
-      this.source = null;
-      this.stream = null;
-
-      // Create new source
-      this.mediaDevice = mediaDevice;
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        audio: { deviceId: mediaDevice.deviceId },
-        video: false,
-      });
-      this.source = this.context.createMediaStreamSource(this.stream);
-      this.source.connect(this.context.destination);
-
-      this.source.connect(this.analyser);
-    }
-  }
-
-  private onMediaChange = (mediaDevice?: MediaDeviceInfo) => {
-    if (mediaDevice && !this.context) {
-      this.init(mediaDevice);
-    } else if (this.context) {
-      this.change(mediaDevice);
-    }
+  private onAudioSourceChange = (mediaDevice?: MediaDeviceInfo) => {
+    this.init();
   };
 
   private onCarrierFrequencyChange = (carrierFrequencyHz: number) => {
@@ -164,14 +172,9 @@ class Processor {
 
       this?.source?.connect(this.filter);
       this?.source?.connect(this.analyser);
+      let a = 2;
     }
   };
 }
 
-export const defaultProcessor = new Processor(
-  mediaDevice,
-  carrierFrequencyHz,
-  playback,
-  audio,
-  displayFilter
-);
+export const defaultProcessorKey = Symbol();

@@ -1,9 +1,9 @@
 <script lang="ts">
   import chroma from "chroma-js";
-  import { onMount } from "svelte";
+  import { getContext, onMount } from "svelte";
   import SvelteResizeObserver from "svelte-resize-observer";
   import { carrierFrequencyHz } from "./config";
-  import { defaultProcessor } from "./Processor";
+  import { defaultProcessorKey, Processor } from "./Processor";
 
   export let targetFps: number = 120;
   $: frameRateMs = (1 / targetFps) * 1000;
@@ -28,6 +28,8 @@
 
   let buffer: Uint8Array | null = null;
   let freqMax = $carrierFrequencyHz * 2;
+
+  const processor = getContext<Processor>(defaultProcessorKey);
 
   onMount(() => {
     waterfallCtx = waterfallCanvas.getContext("2d", {
@@ -75,7 +77,7 @@
     lastDrawTime = time;
 
     // Move the current waterfall upwards
-    if (defaultProcessor?.context?.state === "running") {
+    if (processor?.context?.state === "running") {
       try {
         waterfallCtx.fillStyle = bgStyle;
         const img = waterfallCtx.getImageData(
@@ -126,8 +128,8 @@
 
     ctx.imageSmoothingEnabled = false;
 
-    if (defaultProcessor.analyser) {
-      const analyser = defaultProcessor.analyser;
+    const analyser = processor.analyser;
+    if (analyser) {
       const bins = analyser.frequencyBinCount;
       const sliceWidth = (width - 1) / bins;
 

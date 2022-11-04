@@ -1,9 +1,32 @@
 <script lang="ts">
+  import { onDestroy, setContext } from "svelte";
+  import {
+    audio,
+    audioSource,
+    carrierFrequencyHz,
+    displayFilter,
+    playback,
+  } from "./lib/config";
   import Config from "./lib/Config.svelte";
   import Placeholder from "./lib/Placeholder.svelte";
+  import { defaultProcessorKey, Processor } from "./lib/Processor";
   import Scan from "./lib/Scan.svelte";
   import Scope from "./lib/Scope.svelte";
   import Waterfall from "./lib/Waterfall.svelte";
+
+  const processor = new Processor(
+    audioSource,
+    carrierFrequencyHz,
+    playback,
+    audio,
+    displayFilter
+  );
+
+  setContext(defaultProcessorKey, processor);
+
+  onDestroy(() => {
+    processor.close();
+  });
 </script>
 
 <main class="h-full p-4">

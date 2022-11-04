@@ -8,9 +8,10 @@ import { writable } from "svelte/store";
 export const carrierFrequencyHz = writable(500);
 
 /**
- * The media device that should be used to pull audio from.
+ * The audio source that should be used to pull audio.
  */
-export const mediaDevice: Writable<MediaDeviceInfo | null> = writable(null);
+export const audioSource: Writable<MediaDeviceInfo | File | null> =
+  writable(null);
 
 export type PlaybackState = "play" | "pause";
 

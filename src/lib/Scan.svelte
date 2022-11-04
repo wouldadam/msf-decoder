@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { getContext } from "svelte";
   import Chart from "./Chart.svelte";
   import { carrierFrequencyHz } from "./config";
-  import { defaultProcessor } from "./Processor";
+  import { defaultProcessorKey, Processor } from "./Processor";
 
   const style = getComputedStyle(document.querySelector(":root"));
   const lineStyle = `hsla(${style.getPropertyValue("--p")})`;
@@ -14,6 +15,8 @@
   let freqMax = $carrierFrequencyHz * 2;
   let dBMin = -100;
   let dBMax = -30;
+
+  const processor = getContext<Processor>(defaultProcessorKey);
 
   /** Draw the plot line on the given canvas. */
   function drawLine(ctx: CanvasRenderingContext2D) {
@@ -28,8 +31,8 @@
     ctx.lineWidth = 1;
     ctx.strokeStyle = lineStyle;
 
-    if (defaultProcessor.analyser) {
-      const analyser = defaultProcessor.analyser;
+    const analyser = processor.analyser;
+    if (analyser) {
       const bins = analyser.frequencyBinCount;
       const sliceWidth = width / bins;
 

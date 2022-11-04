@@ -8,17 +8,21 @@
   import { get, type Writable } from "svelte/store";
   import {
     audio,
+    audioSource,
     carrierFrequencyHz,
     displayFilter,
-    mediaDevice,
     playback,
     type OnOffState,
   } from "./config";
 
   let devices: MediaDeviceInfo[] | null = null;
+  let audioFileInput: HTMLInputElement | null = null;
+  $: if (!($audioSource instanceof File)) {
+    audioFileInput.value = "";
+  }
 
   onMount(async () => {
-    // We have to call this first otherwise we don't get give permissions
+    // We have to call this first otherwise we don't get given permissions
     // to enumerate the audo devices.
     await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -41,6 +45,12 @@
       state.set("on");
     }
   }
+
+  function onAudioFile(event: Event) {
+    if (audioFileInput.files.length === 1) {
+      $audioSource = audioFileInput.files[0];
+    }
+  }
 </script>
 
 <!--
@@ -53,21 +63,38 @@
   <div class="card-body">
     <h2 class="card-title">Config</h2>
 
-    {#if devices == null}
-      <p>No audio devices available.</p>
-    {:else}
-      <label class="label-text" for="source">Source</label>
-      <select
-        class={"select select-sm w-full" +
-          (!$mediaDevice ? " select-warning" : "")}
-        id="source"
-        bind:value={$mediaDevice}
-      >
-        {#each devices as device}
-          <option value={device}>{device.label}</option>
-        {/each}
-      </select>
-    {/if}
+    <label class="label-text" for="source">Source</label>
+    <div class="flex flex-row gap-2" id="source">
+      {#if devices == null}
+        <p>No audio devices available.</p>
+      {:else}
+        <div class="w-full">
+          <select
+            class={"select select-sm w-full"}
+            class:select-warning={!$audioSource}
+            bind:value={$audioSource}
+          >
+            {#each devices as device}
+              <option value={device}>{device.label}</option>
+            {/each}
+
+            {#if $audioSource instanceof File}
+              <option value={$audioSource}>{$audioSource.name}</option>
+            {/if}
+          </select>
+        </div>
+      {/if}
+
+      <label class="btn btn-sm" for="audioFile">...</label>
+      <input
+        id="audioFile"
+        class="hidden"
+        type="file"
+        accept="audio/*"
+        bind:this={audioFileInput}
+        on:change={onAudioFile}
+      />
+    </div>
 
     <label class="label-text" for="freq">Carrier frequency</label>
     <label class="input-group">

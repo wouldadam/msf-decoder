@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { defaultProcessor } from "./Processor";
+  import { defaultProcessorKey, Processor } from "./Processor";
   import Chart from "./Chart.svelte";
+  import { getContext } from "svelte";
 
   const style = getComputedStyle(document.querySelector(":root"));
   const lineStyle = `hsla(${style.getPropertyValue("--p")})`;
@@ -18,6 +19,8 @@
     maxLabel: timeMaxMs.toFixed(2),
   };
 
+  const processor = getContext<Processor>(defaultProcessorKey);
+
   /** Draw the plot line on the given canvas. */
   function drawLine(ctx: CanvasRenderingContext2D) {
     const width = ctx.canvas.width / window.devicePixelRatio;
@@ -31,8 +34,8 @@
     ctx.lineWidth = 1;
     ctx.strokeStyle = lineStyle;
 
-    if (defaultProcessor.analyser) {
-      const analyser = defaultProcessor.analyser;
+    const analyser = processor.analyser;
+    if (analyser) {
       const sliceWidth = width / analyser.frequencyBinCount;
 
       if (!buffer) {
