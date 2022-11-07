@@ -34,7 +34,7 @@
     ctx.lineWidth = 1;
     ctx.strokeStyle = lineStyle;
 
-    const analyser = processor.analyser;
+    const analyser = processor?.analyser;
     if (analyser) {
       const sliceWidth = width / analyser.frequencyBinCount;
 

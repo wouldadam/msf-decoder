@@ -18,7 +18,9 @@
   let devices: MediaDeviceInfo[] | null = null;
   let audioFileInput: HTMLInputElement | null = null;
   $: if (!($audioSource instanceof File)) {
-    audioFileInput.value = "";
+    if (audioFileInput) {
+      audioFileInput.value = "";
+    }
   }
 
   onMount(async () => {
@@ -46,7 +48,7 @@
     }
   }
 
-  function onAudioFile(event: Event) {
+  function onAudioFile() {
     if (audioFileInput.files.length === 1) {
       $audioSource = audioFileInput.files[0];
     }

@@ -42,7 +42,7 @@
   function onResize() {
     // Take a copy of the current canvas as resizing it will clear it
     // and cause flickering
-    let img;
+    let img: ImageData;
     try {
       img = ctx.getImageData(0, 0, canvas.width, canvas.height);
     } catch (e) {}

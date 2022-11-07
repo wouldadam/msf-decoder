@@ -24,8 +24,6 @@
   let lastDrawTime = 0;
   let frame: number | null = null;
 
-  let timeMax = 1;
-
   let buffer: Uint8Array | null = null;
   let freqMax = $carrierFrequencyHz * 2;
 
@@ -128,13 +126,12 @@
 
     ctx.imageSmoothingEnabled = false;
 
-    const analyser = processor.analyser;
+    const analyser = processor?.analyser;
     if (analyser) {
       const bins = analyser.frequencyBinCount;
       const sliceWidth = (width - 1) / bins;
 
       freqMax = analyser.context.sampleRate / 2;
-      timeMax = (analyser.fftSize / analyser.context.sampleRate) * height - 1;
 
       if (!buffer) {
         buffer = new Uint8Array(bins);
