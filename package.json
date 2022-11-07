@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "types": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "coverage": "vitest run --coverage"
