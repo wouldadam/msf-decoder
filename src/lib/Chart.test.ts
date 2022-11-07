@@ -3,10 +3,16 @@ import { beforeEach, expect, test, vi } from "vitest";
 import Chart from "./Chart.svelte";
 
 beforeEach(() => {
+  vi.useFakeTimers();
+
   window.requestAnimationFrame = vi.fn().mockImplementation((cb) => {
-    setTimeout(() => cb(1), 0);
+    setTimeout(() => cb(10000), 10000);
     return 0;
   });
+});
+
+afterEach(() => {
+  vi.clearAllTimers();
 });
 
 test("should render with no props", async () => {
@@ -15,7 +21,9 @@ test("should render with no props", async () => {
   const canvas = result.getByTestId("chart-canvas") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d");
 
-  waitFor(() => expect(ctx.stroke).toBeCalled());
+  vi.advanceTimersByTime(10000);
+
+  await waitFor(() => expect(ctx.stroke).toBeCalled());
 });
 
 test("should render with props", async () => {
@@ -38,8 +46,10 @@ test("should render with props", async () => {
   const canvas = result.getByTestId("chart-canvas") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d");
 
-  waitFor(() => expect(ctx.stroke).toBeCalled());
-  waitFor(() => expect(drawLine).toBeCalled());
+  vi.advanceTimersByTime(10000);
+
+  await waitFor(() => expect(ctx.stroke).toBeCalled());
+  await waitFor(() => expect(drawLine).toBeCalled());
 
   for (const dimension of ["x", "y"]) {
     expect(result.getByText(`${dimension}-label`)).toBeInTheDocument();

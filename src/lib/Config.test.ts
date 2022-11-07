@@ -2,7 +2,7 @@ import { vi, expect, test } from "vitest";
 import { render } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { get } from "svelte/store";
-import { carrierFrequencyHz, mediaDevice } from "./config";
+import { carrierFrequencyHz, audioSource } from "./config";
 import Config from "./Config.svelte";
 
 function setupAudioDevices(devices: MediaDeviceInfo[]) {
@@ -54,7 +54,7 @@ test("should list available audioinput devices", async () => {
   await user.selectOptions(result.getByRole("combobox"), ["Device B"]);
 
   // Check option was chosen
-  expect(get(mediaDevice).deviceId).toBe("B");
+  expect(get(audioSource)).toHaveProperty("deviceId", "B");
 });
 
 test("should handle missing audioinput devices", () => {
