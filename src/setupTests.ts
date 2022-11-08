@@ -1,3 +1,5 @@
+import { vi } from "vitest";
+
 // Mock the ResizeObserver API
 import ResizeObserverPolyfill from "resize-observer-polyfill";
 if (!global.ResizeObserver) {
@@ -12,3 +14,6 @@ expect.extend(matchers);
 
 // Mock the canvas
 import "vitest-canvas-mock";
+
+// Mock the web audio api
+import "./test/audio";

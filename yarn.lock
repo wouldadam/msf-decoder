@@ -206,6 +206,11 @@
   resolved "https://registry.yarnpkg.com/@types/aria-query/-/aria-query-4.2.2.tgz#ed4e0ad92306a704f9fb132a0cfcf77486dbe2bc"
   integrity sha512-HnYpAE1Y6kRyKM/XkEuiRQhTHvkzMBurTHnpFLYLBGPIylZNPs9jJcuOOYWxPLJCSEtmZT0Y8rHDokKN7rRTig==
 
+"@types/audioworklet@^0.0.34":
+  version "0.0.34"
+  resolved "https://registry.yarnpkg.com/@types/audioworklet/-/audioworklet-0.0.34.tgz#8720a4268755ade179c642a2c11c62be01c1993a"
+  integrity sha512-k0iLOZUd25rPNIBvygblOaGSzuz1esoMACZJBn+cp1rZ6+ovQYhzo3pEODJo+ap1RQt0juPU9BxvFEucVTwVQA==
+
 "@types/chai-subset@^1.3.3":
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/@types/chai-subset/-/chai-subset-1.3.3.tgz#97893814e92abd2c534de422cb377e0e0bdaac94"

@@ -4,7 +4,7 @@
     audio,
     audioSource,
     carrierFrequencyHz,
-    displayFilter,
+    displayMode,
     playback,
   } from "./lib/config";
   import Config from "./lib/Config.svelte";
@@ -19,7 +19,7 @@
     carrierFrequencyHz,
     playback,
     audio,
-    displayFilter
+    displayMode
   );
 
   setContext(defaultProcessorKey, processor);

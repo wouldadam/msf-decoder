@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import MdInput from "svelte-icons/md/MdInput.svelte";
   import MdGraphicEq from "svelte-icons/md/MdGraphicEq.svelte";
+  import GiComputing from "svelte-icons/gi/GiComputing.svelte";
   import MdPlayArrow from "svelte-icons/md/MdPlayArrow.svelte";
   import MdStop from "svelte-icons/md/MdStop.svelte";
   import MdVolumeOff from "svelte-icons/md/MdVolumeOff.svelte";
@@ -10,7 +12,7 @@
     audio,
     audioSource,
     carrierFrequencyHz,
-    displayFilter,
+    displayMode,
     playback,
     type OnOffState,
   } from "./config";
@@ -123,13 +125,31 @@
         {/if}
       </button>
 
-      <button
-        class="btn p-2 pl-3 pr-3"
-        class:btn-info={$displayFilter === "on"}
-        on:click={() => toggleOnOffState(displayFilter)}
-      >
-        <MdGraphicEq />
-      </button>
+      <div class="btn-group btn-horizontal">
+        <button
+          class="btn p-2 pl-3 pr-3"
+          class:btn-info={$displayMode === "raw"}
+          on:click={() => ($displayMode = "raw")}
+        >
+          <MdInput />
+        </button>
+
+        <button
+          class="btn p-2 pl-3 pr-3"
+          class:btn-info={$displayMode === "filter"}
+          on:click={() => ($displayMode = "filter")}
+        >
+          <MdGraphicEq />
+        </button>
+
+        <button
+          class="btn p-2 pl-3 pr-3"
+          class:btn-info={$displayMode === "comparator"}
+          on:click={() => ($displayMode = "comparator")}
+        >
+          <GiComputing />
+        </button>
+      </div>
 
       <button
         class="btn p-2 pl-3 pr-3"

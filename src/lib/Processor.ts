@@ -1,6 +1,7 @@
 import { get, type Readable, type Unsubscriber } from "svelte/store";
-import type { OnOffState, PlaybackState } from "./config";
-import testProcessorUrl from "./TestProcessor.ts?url";
+import type { DisplayMode, OnOffState, PlaybackState } from "./config";
+import { ComparatorNode } from "./ComparatorNode";
+import comparatorProcessorUrl from "./ComparatorProcessor.ts?url";
 
 /**
  * Manages the processing of a selected audio stream.
@@ -10,11 +11,12 @@ export class Processor {
   private unsubCarrierFrequency: Unsubscriber;
   private unsubPlayback: Unsubscriber;
   private unsubAudio: Unsubscriber;
-  private unsubDisplayFilter: Unsubscriber;
+  private unsubDisplayMode: Unsubscriber;
 
   private stream?: MediaStream;
   private source?: MediaStreamAudioSourceNode | AudioBufferSourceNode;
   private filter?: BiquadFilterNode;
+  private comparator?: AudioWorkletNode;
 
   public context?: AudioContext;
   public analyser?: AnalyserNode;
@@ -24,7 +26,7 @@ export class Processor {
     private carrierFrequencyStore: Readable<number>,
     private playbackStore: Readable<PlaybackState>,
     private audioStore: Readable<OnOffState>,
-    private displayFilterStore: Readable<OnOffState>
+    private displayModeStore: Readable<DisplayMode>
   ) {
     this.unsubAudioSource = audioSourceStore.subscribe(
       this.onAudioSourceChange
@@ -34,8 +36,8 @@ export class Processor {
     );
     this.unsubPlayback = playbackStore.subscribe(this.onPlaybackChange);
     this.unsubAudio = audioStore.subscribe(this.onAudioChange);
-    this.unsubDisplayFilter = displayFilterStore.subscribe(
-      this.onDisplayFilterChange
+    this.unsubDisplayMode = displayModeStore.subscribe(
+      this.onDisplayModeChange
     );
   }
 
@@ -45,7 +47,7 @@ export class Processor {
     this.unsubCarrierFrequency();
     this.unsubPlayback();
     this.unsubAudio();
-    this.unsubDisplayFilter();
+    this.unsubDisplayMode();
 
     this.stop();
   }
@@ -59,6 +61,7 @@ export class Processor {
   /** Stops any current playback. */
   public stop() {
     this?.analyser?.disconnect();
+    this?.comparator?.disconnect();
     this?.filter?.disconnect();
 
     if (this.source instanceof AudioBufferSourceNode) {
@@ -69,6 +72,7 @@ export class Processor {
     this?.context?.close();
 
     this.analyser = null;
+    this.comparator = null;
     this.filter = null;
     this.source = null;
     this.stream = null;
@@ -85,7 +89,7 @@ export class Processor {
     }
 
     this.context = new AudioContext();
-    this.context.audioWorklet.addModule(testProcessorUrl);
+    this.context.audioWorklet.addModule(comparatorProcessorUrl);
 
     if (get(this.playbackStore) === "pause") {
       this.context.suspend();
@@ -118,6 +122,13 @@ export class Processor {
       get(this.carrierFrequencyStore),
       this.context.currentTime
     );
+    this.source.connect(this.filter);
+
+    this.comparator = new ComparatorNode(this.context, {
+      polarity: "positive",
+      thresholdWindowSec: 2,
+    });
+    this.filter.connect(this.comparator);
 
     this.analyser = this.context.createAnalyser();
     this.analyser.maxDecibels = 0;
@@ -125,16 +136,21 @@ export class Processor {
     this.analyser.fftSize = 4096;
     this.analyser.smoothingTimeConstant = 0;
 
-    if (get(this.displayFilterStore) == "on") {
-      this.source.connect(this.filter);
-      this.filter.connect(this.analyser);
-    } else {
-      this.source.connect(this.filter);
-      this.source.connect(this.analyser);
+    switch (get(this.displayModeStore)) {
+      default:
+      case "raw":
+        this.source.connect(this.analyser);
+        break;
+      case "filter":
+        this.filter.connect(this.analyser);
+        break;
+      case "comparator":
+        this.comparator.connect(this.analyser);
+        break;
     }
   }
 
-  private onAudioSourceChange = (mediaDevice?: MediaDeviceInfo) => {
+  private onAudioSourceChange = () => {
     this.init();
   };
 
@@ -161,18 +177,30 @@ export class Processor {
     }
   };
 
-  private onDisplayFilterChange = (state: OnOffState) => {
-    if (state == "on") {
-      this?.source?.disconnect(this.analyser);
+  private onDisplayModeChange = (mode: DisplayMode) => {
+    try {
+      this?.source?.disconnect(this?.analyser);
+    } catch (e: unknown) {}
 
-      this?.source?.connect(this.filter);
-      this?.filter?.connect(this.analyser);
-    } else {
-      this?.filter?.disconnect(this.analyser);
+    try {
+      this?.filter?.disconnect(this?.analyser);
+    } catch (e: unknown) {}
 
-      this?.source?.connect(this.filter);
-      this?.source?.connect(this.analyser);
-      let a = 2;
+    try {
+      this?.comparator?.disconnect(this?.analyser);
+    } catch (e: unknown) {}
+
+    switch (mode) {
+      default:
+      case "raw":
+        this?.source?.connect(this.analyser);
+        break;
+      case "filter":
+        this?.filter?.connect(this.analyser);
+        break;
+      case "comparator":
+        this?.comparator?.connect(this.analyser);
+        break;
     }
   };
 }
