@@ -33,20 +33,44 @@ export type DUT1 =
 
 // Frame of MSF information
 export interface TimeFrame {
-  // -0.8 to +0.8 in 0.1 increments
+  /// -0.8 to +0.8 in 0.1 increments
   dut1?: DUT1;
 
-  // 00 to 99
+  /// 00 to 99
   year?: number;
+
+  /// Year has been fully decoded
+  yearComplete?: boolean;
+
+  /// The number of bits set in the year
+  yearBitCount?: number;
 
   // 01 to 12
   month?: number;
 
+  /// Month has been fully decoded
+  monthComplete?: boolean;
+
+  /// The number of bits set in the month
+  monthBitCount?: number;
+
   /// 01 to 31
   dayOfMonth?: number;
 
+  /// Day of month has been fully decoded
+  dayOfMonthComplete?: boolean;
+
+  /// The number of bits set in the day of month
+  dayOfMonthBitCount?: number;
+
   // Day of the week
   dayOfWeek?: DayOfWeek;
+
+  /// Day of week has been fully decoded
+  dayOfWeekComplete?: boolean;
+
+  /// The number of bits set in the day of week
+  dayOfWeekBitCount?: number;
 
   /// 00 to 23
   hour?: number;
@@ -72,6 +96,19 @@ export const aBitOffset = 1;
 
 // Offset into a segment for the b bit
 export const bBitOffset = 2;
+
+/// Bit values for BCD encoded numbers
+export const bcdBits = [1, 2, 4, 8, 10, 20, 40, 80] as const;
+
+// Start and end offsets for each data element in a frame (inclusive)
+export const offsets = {
+  dut1Pos: [1, 8] as const,
+  dut1Neg: [9, 16] as const,
+  year: [17, 24] as const,
+  month: [25, 29] as const,
+  dayOfMonth: [30, 35] as const,
+  dayOfWeek: [36, 38] as const,
+};
 
 /// Indicates if the beginning of the buffer is a minute segment
 export function isMinuteSegment(bits: RingBuffer) {
@@ -155,6 +192,17 @@ function validateExpectedBits(
   return true;
 }
 
+/// Get the value for a single bit at the specified second
+function bcdBitValue(
+  currentSecond: number,
+  startSecond: number,
+  endSecond: number
+) {
+  const length = endSecond - startSecond;
+  const bit = length - (currentSecond - startSecond);
+  return bcdBits[bit];
+}
+
 /// Parses the data out of a second segment and returns it in a TimeFrame
 /// Returns an error if the data doesn't make sense.
 export function parseSecond(
@@ -166,10 +214,9 @@ export function parseSecond(
 
   // Parse it
   if (
-    currentSecond > 0 &&
-    currentSecond <= 8 &&
-    bits.at(bBitOffset) == 1 &&
-    !currentFrame.dut1
+    currentSecond >= offsets.dut1Pos[0] &&
+    currentSecond <= offsets.dut1Pos[1] &&
+    bits.at(bBitOffset) === 1
   ) {
     // Positive DUT1
     if (currentFrame.dut1 !== undefined) {
@@ -178,17 +225,85 @@ export function parseSecond(
 
     currentFrame.dut1 = (currentSecond / 10) as DUT1;
   } else if (
-    currentSecond > 8 &&
-    currentSecond <= 16 &&
-    bits.at(bBitOffset) == 1 &&
-    !currentFrame.dut1
+    currentSecond >= offsets.dut1Neg[0] &&
+    currentSecond <= offsets.dut1Neg[1] &&
+    bits.at(bBitOffset) === 1
   ) {
     // Negative DUT1
     if (currentFrame.dut1 !== undefined) {
       return Error("multiple dut1 bits set");
     }
 
-    currentFrame.dut1 = ((currentSecond - 8) / 10) as DUT1;
+    const absDut1 = currentSecond - offsets.dut1Neg[1] - 1;
+    currentFrame.dut1 = (absDut1 / 10) as DUT1;
+  } else if (
+    currentSecond >= offsets.year[0] &&
+    currentSecond <= offsets.year[1]
+  ) {
+    if (bits.at(aBitOffset) === 1) {
+      const value = bcdBitValue(
+        currentSecond,
+        offsets.year[0],
+        offsets.year[1]
+      );
+      newFrame.year = (currentFrame?.year ?? 0) + value;
+      newFrame.yearBitCount = (currentFrame.yearBitCount ?? 0) + 1;
+    }
+
+    if (currentSecond === offsets.year[1]) {
+      newFrame.yearComplete = true;
+    }
+  } else if (
+    currentSecond >= offsets.month[0] &&
+    currentSecond <= offsets.month[1]
+  ) {
+    if (bits.at(aBitOffset) === 1) {
+      const value = bcdBitValue(
+        currentSecond,
+        offsets.month[0],
+        offsets.month[1]
+      );
+      newFrame.month = (currentFrame?.month ?? 0) + value;
+      newFrame.monthBitCount = (currentFrame.monthBitCount ?? 0) + 1;
+    }
+
+    if (currentSecond === offsets.month[1]) {
+      newFrame.monthComplete = true;
+    }
+  } else if (
+    currentSecond >= offsets.dayOfMonth[0] &&
+    currentSecond <= offsets.dayOfMonth[1]
+  ) {
+    if (bits.at(aBitOffset) === 1) {
+      const value = bcdBitValue(
+        currentSecond,
+        offsets.dayOfMonth[0],
+        offsets.dayOfMonth[1]
+      );
+      newFrame.dayOfMonth = (currentFrame?.dayOfMonth ?? 0) + value;
+      newFrame.dayOfMonthBitCount = (currentFrame.dayOfMonthBitCount ?? 0) + 1;
+    }
+
+    if (currentSecond === offsets.dayOfMonth[1]) {
+      newFrame.dayOfMonthComplete = true;
+    }
+  } else if (
+    currentSecond >= offsets.dayOfWeek[0] &&
+    currentSecond <= offsets.dayOfWeek[1]
+  ) {
+    if (bits.at(aBitOffset) === 1) {
+      const value = bcdBitValue(
+        currentSecond,
+        offsets.dayOfWeek[0],
+        offsets.dayOfWeek[1]
+      );
+      newFrame.dayOfWeek = (currentFrame?.dayOfWeek ?? 0) + value;
+      newFrame.dayOfWeekBitCount = (currentFrame.dayOfWeekBitCount ?? 0) + 1;
+    }
+
+    if (currentSecond === offsets.dayOfWeek[1]) {
+      newFrame.dayOfWeekComplete = true;
+    }
   } else if (currentSecond === 53) {
     // Summer time warning
     currentFrame.summerTimeWarning = bits.at(bBitOffset) === 1;
