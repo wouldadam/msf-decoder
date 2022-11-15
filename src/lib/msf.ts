@@ -75,8 +75,20 @@ export interface TimeFrame {
   /// 00 to 23
   hour?: number;
 
+  /// Hour has been fully decoded
+  hourComplete?: boolean;
+
+  /// The number of bits set in the hour
+  hourBitCount?: number;
+
   /// 00 to 59
   minute?: number;
+
+  /// Minute has been fully decoded
+  minuteComplete?: boolean;
+
+  /// The number of bits set in the minute
+  minuteBitCount?: number;
 
   /// Indicates that the summer time flag is about to change
   summerTimeWarning?: boolean;
@@ -108,6 +120,10 @@ export const offsets = {
   month: [25, 29] as const,
   dayOfMonth: [30, 35] as const,
   dayOfWeek: [36, 38] as const,
+  hour: [39, 44] as const,
+  minute: [45, 51] as const,
+  summerTimeWarning: [53, 53] as const,
+  summerTime: [58, 58] as const,
 };
 
 /// Indicates if the beginning of the buffer is a minute segment
@@ -304,10 +320,44 @@ export function parseSecond(
     if (currentSecond === offsets.dayOfWeek[1]) {
       newFrame.dayOfWeekComplete = true;
     }
-  } else if (currentSecond === 53) {
+  } else if (
+    currentSecond >= offsets.hour[0] &&
+    currentSecond <= offsets.hour[1]
+  ) {
+    if (bits.at(aBitOffset) === 1) {
+      const value = bcdBitValue(
+        currentSecond,
+        offsets.hour[0],
+        offsets.hour[1]
+      );
+      newFrame.hour = (currentFrame?.hour ?? 0) + value;
+      newFrame.hourBitCount = (currentFrame.hourBitCount ?? 0) + 1;
+    }
+
+    if (currentSecond === offsets.hour[1]) {
+      newFrame.hourComplete = true;
+    }
+  } else if (
+    currentSecond >= offsets.minute[0] &&
+    currentSecond <= offsets.minute[1]
+  ) {
+    if (bits.at(aBitOffset) === 1) {
+      const value = bcdBitValue(
+        currentSecond,
+        offsets.minute[0],
+        offsets.minute[1]
+      );
+      newFrame.minute = (currentFrame?.minute ?? 0) + value;
+      newFrame.minuteBitCount = (currentFrame.minuteBitCount ?? 0) + 1;
+    }
+
+    if (currentSecond === offsets.minute[1]) {
+      newFrame.minuteComplete = true;
+    }
+  } else if (currentSecond === offsets.summerTimeWarning[0]) {
     // Summer time warning
     currentFrame.summerTimeWarning = bits.at(bBitOffset) === 1;
-  } else if (currentSecond === 58) {
+  } else if (currentSecond === offsets.summerTime[0]) {
     // Summer time
     currentFrame.summerTime = bits.at(bBitOffset) === 1;
   }

@@ -107,6 +107,8 @@ function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
   const monthBits = toBCD(frame.month, 5);
   const dayOfMonthBits = toBCD(frame.dayOfMonth, 6);
   const dayOfWeekBits = toBCD(frame.dayOfWeek, 3);
+  const hourBits = toBCD(frame.hour, 6);
+  const minuteBits = toBCD(frame.minute, 7);
 
   for (let second = 1; second < 60; ++second) {
     if (dut1Bit != 0 && second === dut1Bit) {
@@ -127,6 +129,12 @@ function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
       second <= offsets.dayOfWeek[1]
     ) {
       ops.push(secondDesc(dayOfWeekBits[second - offsets.dayOfWeek[0]], 0));
+    }
+    // Time
+    else if (second >= offsets.hour[0] && second <= offsets.hour[1]) {
+      ops.push(secondDesc(hourBits[second - offsets.hour[0]], 0));
+    } else if (second >= offsets.minute[0] && second <= offsets.minute[1]) {
+      ops.push(secondDesc(minuteBits[second - offsets.minute[0]], 0));
     }
     // Marker
     else if (second === 53) {
@@ -213,6 +221,10 @@ test("decode full frame", () => {
     dayOfMonthComplete: true,
     dayOfWeek: frame.dayOfWeek,
     dayOfWeekComplete: true,
+    hour: frame.hour,
+    hourComplete: true,
+    minute: frame.minute,
+    minuteComplete: true,
     summerTimeWarning: frame.summerTimeWarning,
     summerTime: frame.summerTime,
   };
