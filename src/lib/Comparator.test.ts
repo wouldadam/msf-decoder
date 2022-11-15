@@ -1,4 +1,4 @@
-import { test, vi } from "vitest";
+import { test } from "vitest";
 import { ComparatorProcessor } from "./ComparatorProcessor";
 
 const frameSize = 128;

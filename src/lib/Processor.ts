@@ -1,7 +1,9 @@
 import { get, type Readable, type Unsubscriber } from "svelte/store";
-import type { DisplayMode, OnOffState, PlaybackState } from "./config";
 import { ComparatorNode } from "./ComparatorNode";
 import comparatorProcessorUrl from "./ComparatorProcessor.ts?url";
+import type { DisplayMode, OnOffState, PlaybackState } from "./config";
+import { MSFNode } from "./MSFNode";
+import msfProcessorUrl from "./MSFProcessor.ts?url";
 
 /**
  * Manages the processing of a selected audio stream.
@@ -17,6 +19,7 @@ export class Processor {
   private source?: MediaStreamAudioSourceNode | AudioBufferSourceNode;
   private filter?: BiquadFilterNode;
   private comparator?: AudioWorkletNode;
+  private msf?: AudioWorkletNode;
 
   public context?: AudioContext;
   public analyser?: AnalyserNode;
@@ -61,6 +64,7 @@ export class Processor {
   /** Stops any current playback. */
   public stop() {
     this?.analyser?.disconnect();
+    this?.msf?.disconnect();
     this?.comparator?.disconnect();
     this?.filter?.disconnect();
 
@@ -72,6 +76,7 @@ export class Processor {
     this?.context?.close();
 
     this.analyser = null;
+    this.msf = null;
     this.comparator = null;
     this.filter = null;
     this.source = null;
@@ -90,6 +95,7 @@ export class Processor {
 
     this.context = new AudioContext();
     this.context.audioWorklet.addModule(comparatorProcessorUrl);
+    this.context.audioWorklet.addModule(msfProcessorUrl);
 
     if (get(this.playbackStore) === "pause") {
       this.context.suspend();
@@ -125,10 +131,18 @@ export class Processor {
     this.source.connect(this.filter);
 
     this.comparator = new ComparatorNode(this.context, {
-      polarity: "positive",
+      polarity: "negative",
       thresholdWindowSec: 2,
     });
     this.filter.connect(this.comparator);
+
+    this.msf = new MSFNode(this.context, {
+      symbolRate: 10,
+    });
+    this.msf.port.onmessage = (ev: MessageEvent) => {
+      console.debug(ev.data);
+    };
+    this.comparator.connect(this.msf);
 
     this.analyser = this.context.createAnalyser();
     this.analyser.maxDecibels = 0;

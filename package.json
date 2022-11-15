@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "types": "svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",
+    "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "coverage": "vitest run --coverage"
   },
