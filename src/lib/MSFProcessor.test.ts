@@ -56,7 +56,8 @@ function zeroDesc(sampleCount: number): InputDesc {
 
 /// Takes a series of InputDescs and uses them to create the full buffer of input samples
 function createInput(segments: Array<InputDesc>): Float32Array {
-  const sampleCount = segments.reduce((sum, desc) => sum + desc[1], 0);
+  let sampleCount = segments.reduce((sum, desc) => sum + desc[1], 0);
+  sampleCount = Math.ceil(sampleCount / audioBufferLength) * audioBufferLength;
 
   const input = new Float32Array(sampleCount);
 
