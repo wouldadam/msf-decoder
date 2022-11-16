@@ -78,20 +78,25 @@ function feedProcessor(processor: MSFProcessor, input: Float32Array) {
 }
 
 /// Convert a value to the BCD format used in the MSF frames
-function toBCD(value: number, bitCount: number): number[] {
-  const bits = [];
-  for (let bit = 0; bit < bitCount; ++bit) {
-    const bitValue = bcdBits[bitCount - bit - 1];
+function toBCD(value: number, length: number) {
+  const bits: number[] = [];
+  let bitCount = 0;
+
+  for (let bit = 0; bit < length; ++bit) {
+    const bitValue = bcdBits[length - bit - 1];
 
     if (value < bitValue) {
       bits.push(0);
     } else {
       value -= bitValue;
+      bitCount += 1;
       bits.push(1);
     }
   }
 
-  return bits;
+  const parity = bitCount % 2 == 0 ? 1 : 0;
+
+  return [bits, parity] as const;
 }
 
 /// Creates all of the segments for and entire frame
@@ -103,12 +108,21 @@ function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
     dut1Bit = Math.abs(dut1Bit) + 8;
   }
 
-  const yearBits = toBCD(frame.year, 8);
-  const monthBits = toBCD(frame.month, 5);
-  const dayOfMonthBits = toBCD(frame.dayOfMonth, 6);
-  const dayOfWeekBits = toBCD(frame.dayOfWeek, 3);
-  const hourBits = toBCD(frame.hour, 6);
-  const minuteBits = toBCD(frame.minute, 7);
+  const [yearBits, yearParity] = toBCD(frame.year, 8);
+  const [monthBits, monthParity] = toBCD(frame.month, 5);
+  const [dayOfMonthBits, dayOfMonthParity] = toBCD(frame.dayOfMonth, 6);
+  const [dayOfWeekBits, dayOfWeekParity] = toBCD(frame.dayOfWeek, 3);
+  const [hourBits, hourParity] = toBCD(frame.hour, 6);
+  const [minuteBits, minuteParity] = toBCD(frame.minute, 7);
+
+  // Day and time parity are multiple fields combined
+  const dayParity = monthParity + dayOfMonthParity === 1 ? 0 : 1;
+  const timeParity = hourParity + minuteParity === 1 ? 0 : 1;
+
+  frame.yearParity = yearParity;
+  frame.dayParity = dayParity;
+  frame.dayOfWeekParity = dayOfWeekParity;
+  frame.timeParity = timeParity;
 
   for (let second = 1; second < 60; ++second) {
     if (dut1Bit != 0 && second === dut1Bit) {
@@ -137,17 +151,17 @@ function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
       ops.push(secondDesc(minuteBits[second - offsets.minute[0]], 0));
     }
     // Marker
-    else if (second === 53) {
+    else if (second === offsets.summerTimeWarning[0]) {
       ops.push(secondDesc(1, frame.summerTimeWarning ? 1 : 0));
-    } else if (second === 54) {
-      ops.push(secondDesc(1, 0));
-    } else if (second === 55) {
-      ops.push(secondDesc(1, 0));
-    } else if (second === 56) {
-      ops.push(secondDesc(1, 0));
-    } else if (second === 57) {
-      ops.push(secondDesc(1, 0));
-    } else if (second === 58) {
+    } else if (second === offsets.yearParity[0]) {
+      ops.push(secondDesc(1, yearParity));
+    } else if (second === offsets.dayParity[0]) {
+      ops.push(secondDesc(1, dayParity));
+    } else if (second === offsets.dayOfWeekParity[0]) {
+      ops.push(secondDesc(1, dayOfWeekParity));
+    } else if (second === offsets.timeParity[0]) {
+      ops.push(secondDesc(1, timeParity));
+    } else if (second === offsets.summerTime[0]) {
       ops.push(secondDesc(1, frame.summerTime ? 1 : 0));
     } else {
       ops.push(secondDesc(0, 0));
@@ -210,23 +224,19 @@ test("decode full frame", () => {
     );
   }
 
-  // Last second should contain full frame
+  // Last second should contain full frame with all fields complete and parity checks valid
   const expectedFrame: TimeFrame = {
-    dut1: frame.dut1,
-    year: frame.year,
+    ...frame,
     yearComplete: true,
-    month: frame.month,
     monthComplete: true,
-    dayOfMonth: frame.dayOfMonth,
     dayOfMonthComplete: true,
-    dayOfWeek: frame.dayOfWeek,
     dayOfWeekComplete: true,
-    hour: frame.hour,
     hourComplete: true,
-    minute: frame.minute,
     minuteComplete: true,
-    summerTimeWarning: frame.summerTimeWarning,
-    summerTime: frame.summerTime,
+    yearParityValid: true,
+    dayParityValid: true,
+    dayOfWeekParityValid: true,
+    timeParityValid: true,
   };
   expect(processor.port.postMessage).toHaveBeenNthCalledWith(
     60,

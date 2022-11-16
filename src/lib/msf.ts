@@ -93,6 +93,30 @@ export interface TimeFrame {
   /// Indicates that the summer time flag is about to change
   summerTimeWarning?: boolean;
 
+  /// The odd parity value of the year
+  yearParity?: number;
+
+  /// Indicates if the year parity check passed
+  yearParityValid?: boolean;
+
+  /// The odd parity value of the month + day of month
+  dayParity?: number;
+
+  /// Indicates if the day parity check passed
+  dayParityValid?: boolean;
+
+  /// The odd parity value of the day of week
+  dayOfWeekParity?: number;
+
+  /// Indicates if the dayOfWeek parity check passed
+  dayOfWeekParityValid?: boolean;
+
+  /// The odd parity value of the hour minute
+  timeParity?: number;
+
+  /// Indicates if the time parity check passed
+  timeParityValid?: boolean;
+
   /// Indicates that the broadcast is in summer time (UTC+1)
   summerTime?: boolean;
 }
@@ -122,7 +146,11 @@ export const offsets = {
   dayOfWeek: [36, 38] as const,
   hour: [39, 44] as const,
   minute: [45, 51] as const,
-  summerTimeWarning: [53, 53] as const,
+  summerTimeWarning: [53] as const,
+  yearParity: [54] as const,
+  dayParity: [55] as const,
+  dayOfWeekParity: [56] as const,
+  timeParity: [57] as const,
   summerTime: [58, 58] as const,
 };
 
@@ -219,6 +247,12 @@ function bcdBitValue(
   return bcdBits[bit];
 }
 
+function validateParity(bitCount: number, parityBit: number): boolean {
+  const isEven = bitCount % 2 === 0;
+  const expectedParityBit = isEven ? 1 : 0;
+  return expectedParityBit === parityBit;
+}
+
 /// Parses the data out of a second segment and returns it in a TimeFrame
 /// Returns an error if the data doesn't make sense.
 export function parseSecond(
@@ -228,31 +262,33 @@ export function parseSecond(
 ): TimeFrame | Error {
   const newFrame: TimeFrame = {};
 
-  // Parse it
+  // Positive DUT1
   if (
     currentSecond >= offsets.dut1Pos[0] &&
     currentSecond <= offsets.dut1Pos[1] &&
     bits.at(bBitOffset) === 1
   ) {
-    // Positive DUT1
     if (currentFrame.dut1 !== undefined) {
       return Error("multiple dut1 bits set");
     }
 
     currentFrame.dut1 = (currentSecond / 10) as DUT1;
-  } else if (
+  }
+  // Negative DUT1
+  else if (
     currentSecond >= offsets.dut1Neg[0] &&
     currentSecond <= offsets.dut1Neg[1] &&
     bits.at(bBitOffset) === 1
   ) {
-    // Negative DUT1
     if (currentFrame.dut1 !== undefined) {
       return Error("multiple dut1 bits set");
     }
 
     const absDut1 = currentSecond - offsets.dut1Neg[1] - 1;
     currentFrame.dut1 = (absDut1 / 10) as DUT1;
-  } else if (
+  }
+  // Date
+  else if (
     currentSecond >= offsets.year[0] &&
     currentSecond <= offsets.year[1]
   ) {
@@ -320,7 +356,9 @@ export function parseSecond(
     if (currentSecond === offsets.dayOfWeek[1]) {
       newFrame.dayOfWeekComplete = true;
     }
-  } else if (
+  }
+  // Time
+  else if (
     currentSecond >= offsets.hour[0] &&
     currentSecond <= offsets.hour[1]
   ) {
@@ -354,11 +392,36 @@ export function parseSecond(
     if (currentSecond === offsets.minute[1]) {
       newFrame.minuteComplete = true;
     }
-  } else if (currentSecond === offsets.summerTimeWarning[0]) {
-    // Summer time warning
-    currentFrame.summerTimeWarning = bits.at(bBitOffset) === 1;
-  } else if (currentSecond === offsets.summerTime[0]) {
-    // Summer time
+  }
+  // Summer time warning
+  else if (currentSecond === offsets.summerTimeWarning[0]) {
+    newFrame.summerTimeWarning = bits.at(bBitOffset) === 1;
+  }
+  // Parity
+  else if (currentSecond === offsets.yearParity[0]) {
+    newFrame.yearParity = bits.at(bBitOffset);
+    newFrame.yearParityValid = validateParity(
+      currentFrame.yearBitCount,
+      newFrame.yearParity
+    );
+  } else if (currentSecond === offsets.dayParity[0]) {
+    newFrame.dayParity = bits.at(bBitOffset);
+    const bitCount =
+      currentFrame.monthBitCount + currentFrame.dayOfMonthBitCount;
+    newFrame.dayParityValid = validateParity(bitCount, newFrame.dayParity);
+  } else if (currentSecond === offsets.dayOfWeekParity[0]) {
+    newFrame.dayOfWeekParity = bits.at(bBitOffset);
+    newFrame.dayOfWeekParityValid = validateParity(
+      currentFrame.dayOfWeekBitCount,
+      newFrame.dayOfWeekParity
+    );
+  } else if (currentSecond === offsets.timeParity[0]) {
+    newFrame.timeParity = bits.at(bBitOffset);
+    const bitCount = currentFrame.hourBitCount + currentFrame.minuteBitCount;
+    newFrame.timeParityValid = validateParity(bitCount, newFrame.timeParity);
+  }
+  // Summer time
+  else if (currentSecond === offsets.summerTime[0]) {
     currentFrame.summerTime = bits.at(bBitOffset) === 1;
   }
 
