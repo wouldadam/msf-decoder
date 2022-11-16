@@ -63,7 +63,7 @@ export class RingBuffer {
       throw RangeError(`Index ${idx} out of range: ${this.currentLength}`);
     }
 
-    return this.buffer[this.readIdx + idx];
+    return this.buffer[(this.readIdx + idx) % this.buffer.length];
   }
 
   /// Clears length data from the buffer, oldest first
