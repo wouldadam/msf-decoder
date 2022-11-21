@@ -2,9 +2,11 @@ import { get, type Readable, type Unsubscriber } from "svelte/store";
 import type { DisplayMode, OnOffState, PlaybackState } from "../config";
 import { ComparatorNode } from "../worklets/ComparatorNode";
 import { MSFNode } from "../worklets/MSFNode";
+import { RMSNode } from "../worklets/RMSNode";
 
 import comparatorProcessorUrl from "../worklets/ComparatorProcessor.ts?url";
 import msfProcessorUrl from "../worklets/MSFProcessor.ts?url";
+import rmsProcessorUrl from "../worklets/RMSProcessor.ts?url";
 
 /**
  * Manages the processing of a selected audio stream.
@@ -22,6 +24,7 @@ export class Processor {
     | AudioBufferSourceNode
     | OscillatorNode;
   private filter?: BiquadFilterNode;
+  private rms?: AudioWorkletNode;
   private comparator?: AudioWorkletNode;
   private msf?: AudioWorkletNode;
 
@@ -70,6 +73,7 @@ export class Processor {
     this?.analyser?.disconnect();
     this?.msf?.disconnect();
     this?.comparator?.disconnect();
+    this?.rms?.disconnect();
     this?.filter?.disconnect();
 
     if (this.source instanceof AudioBufferSourceNode) {
@@ -82,6 +86,7 @@ export class Processor {
     this.analyser = null;
     this.msf = null;
     this.comparator = null;
+    this.rms = null;
     this.filter = null;
     this.source = null;
     this.stream = null;
@@ -98,6 +103,7 @@ export class Processor {
     }
 
     this.context = new AudioContext();
+    this.context.audioWorklet.addModule(rmsProcessorUrl);
     this.context.audioWorklet.addModule(comparatorProcessorUrl);
     this.context.audioWorklet.addModule(msfProcessorUrl);
 
@@ -127,18 +133,23 @@ export class Processor {
 
     this.filter = this.context.createBiquadFilter();
     this.filter.type = "bandpass";
-    this.filter.Q.setValueAtTime(50, this.context.currentTime);
+    this.filter.Q.setValueAtTime(1, this.context.currentTime);
     this.filter.frequency.setValueAtTime(
       get(this.carrierFrequencyStore),
       this.context.currentTime
     );
     this.source.connect(this.filter);
 
+    this.rms = new RMSNode(this.context, {
+      alpha: 0.15,
+    });
+    this.filter.connect(this.rms);
+
     this.comparator = new ComparatorNode(this.context, {
       polarity: "negative",
       thresholdWindowSec: 20,
     });
-    this.filter.connect(this.comparator);
+    this.rms.connect(this.comparator);
 
     this.msf = new MSFNode(this.context, {
       symbolRate: 10,
@@ -161,6 +172,9 @@ export class Processor {
         break;
       case "filter":
         this.filter.connect(this.analyser);
+        break;
+      case "rms":
+        this?.rms?.connect(this.analyser);
         break;
       case "comparator":
         this.comparator.connect(this.analyser);
@@ -215,6 +229,9 @@ export class Processor {
         break;
       case "filter":
         this?.filter?.connect(this.analyser);
+        break;
+      case "rms":
+        this?.rms?.connect(this.analyser);
         break;
       case "comparator":
         this?.comparator?.connect(this.analyser);

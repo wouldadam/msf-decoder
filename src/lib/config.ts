@@ -27,7 +27,7 @@ export type OnOffState = "on" | "off";
  */
 export const audio: Writable<OnOffState> = writable("off");
 
-export type DisplayMode = "raw" | "filter" | "comparator";
+export type DisplayMode = "raw" | "filter" | "rms" | "comparator";
 
 /**
  * Indicates what data is shown in the configurable displays.

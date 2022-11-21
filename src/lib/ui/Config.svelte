@@ -4,6 +4,7 @@
   import MdGraphicEq from "svelte-icons/md/MdGraphicEq.svelte";
   import MdInput from "svelte-icons/md/MdInput.svelte";
   import MdPlayArrow from "svelte-icons/md/MdPlayArrow.svelte";
+  import MdShowChart from "svelte-icons/md/MdShowChart.svelte";
   import MdStop from "svelte-icons/md/MdStop.svelte";
   import MdVolumeOff from "svelte-icons/md/MdVolumeOff.svelte";
   import MdVolumeUp from "svelte-icons/md/MdVolumeUp.svelte";
@@ -114,7 +115,7 @@
 
     <div class="flex flex-row grow gap-2 mt-2">
       <button
-        class="grow btn btn-success"
+        class="grow btn btn-sm btn-success"
         class:btn-error={$playback === "play"}
         on:click={togglePlayback}
       >
@@ -127,7 +128,7 @@
 
       <div class="btn-group btn-horizontal">
         <button
-          class="btn p-2 pl-3 pr-3"
+          class="btn btn-sm p-2 pl-3 pr-3"
           class:btn-info={$displayMode === "raw"}
           on:click={() => ($displayMode = "raw")}
         >
@@ -135,7 +136,7 @@
         </button>
 
         <button
-          class="btn p-2 pl-3 pr-3"
+          class="btn btn-sm p-2 pl-3 pr-3"
           class:btn-info={$displayMode === "filter"}
           on:click={() => ($displayMode = "filter")}
         >
@@ -143,7 +144,15 @@
         </button>
 
         <button
-          class="btn p-2 pl-3 pr-3"
+          class="btn btn-sm p-2 pl-3 pr-3"
+          class:btn-info={$displayMode === "rms"}
+          on:click={() => ($displayMode = "rms")}
+        >
+          <MdShowChart />
+        </button>
+
+        <button
+          class="btn btn-sm p-2 pl-3 pr-3"
           class:btn-info={$displayMode === "comparator"}
           on:click={() => ($displayMode = "comparator")}
         >
@@ -152,7 +161,7 @@
       </div>
 
       <button
-        class="btn p-2 pl-3 pr-3"
+        class="btn btn-sm p-2 pl-3 pr-3"
         on:click={() => toggleOnOffState(audio)}
       >
         {#if $audio === "on"}
