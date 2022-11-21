@@ -6,14 +6,14 @@ import {
   secondSegment,
   validateFixedBits,
   type TimeFrame,
-} from "./msf";
+} from "../processing/msf";
+import { RingBuffer } from "../processing/RingBuffer";
 import type {
   InvalidMark,
   MinuteMark,
   MSFOptions,
   SecondMark,
 } from "./MSFNode";
-import { RingBuffer } from "./RingBuffer";
 
 const msfProcessorName = "msf-processor";
 
@@ -33,19 +33,25 @@ export class MSFProcessor extends AudioWorkletProcessor {
   private demodBuffer: Float32Array; /// Tmp buffer for processing input samples
   private symbolBuffer: RingBuffer; /// Demodulated bits into symbols
 
+  private syncBuffer: Float32Array;
+
   private isFrameStarted: boolean; /// Are we currently processing a frame
   private currentSecond: number; /// What second are we on
 
   private currentFrame: TimeFrame; /// The currently decoded TimeFrame
+
+  private once = false;
 
   constructor(options: MSFProcessorOptions) {
     super();
 
     this.samplesPerSymbol = sampleRate / options.processorOptions.symbolRate;
 
-    this.inputBuffer = new RingBuffer(2 * this.samplesPerSymbol);
+    this.inputBuffer = new RingBuffer(65 * this.samplesPerSymbol);
     this.demodBuffer = new Float32Array(this.samplesPerSymbol);
     this.symbolBuffer = new RingBuffer(2 * 60);
+
+    this.syncBuffer = new Float32Array(this.samplesPerSymbol);
 
     this.isFrameStarted = false;
     this.currentSecond = -1;
@@ -70,6 +76,7 @@ export class MSFProcessor extends AudioWorkletProcessor {
     // Notify the node
     const mark: InvalidMark = {
       msg: "invalid",
+      audioTime: currentTime,
       reason,
       second: this.currentSecond + 1,
       frame: {},
@@ -103,6 +110,7 @@ export class MSFProcessor extends AudioWorkletProcessor {
     // Notify the node
     const mark: SecondMark = {
       msg: "second",
+      audioTime: currentTime,
       second: this.currentSecond,
       frame: this.currentFrame,
     };
@@ -155,7 +163,7 @@ export class MSFProcessor extends AudioWorkletProcessor {
         this.startFrame();
 
         // Notify the Node
-        const mark: MinuteMark = { msg: "minute" };
+        const mark: MinuteMark = { msg: "minute", audioTime: currentTime };
         this.port.postMessage(mark);
 
         // Remove the segment from the buffer

@@ -1,8 +1,8 @@
-import { vi, expect, test } from "vitest";
 import { render } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { get } from "svelte/store";
-import { carrierFrequencyHz, audioSource } from "./config";
+import { expect, test, vi } from "vitest";
+import { audioSource, carrierFrequencyHz } from "../config";
 import Config from "./Config.svelte";
 
 function setupAudioDevices(devices: MediaDeviceInfo[]) {

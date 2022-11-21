@@ -1,9 +1,10 @@
 import { get, type Readable, type Unsubscriber } from "svelte/store";
-import { ComparatorNode } from "./ComparatorNode";
-import comparatorProcessorUrl from "./ComparatorProcessor.ts?url";
-import type { DisplayMode, OnOffState, PlaybackState } from "./config";
-import { MSFNode } from "./MSFNode";
-import msfProcessorUrl from "./MSFProcessor.ts?url";
+import type { DisplayMode, OnOffState, PlaybackState } from "../config";
+import { ComparatorNode } from "../worklets/ComparatorNode";
+import { MSFNode } from "../worklets/MSFNode";
+
+import comparatorProcessorUrl from "../worklets/ComparatorProcessor.ts?url";
+import msfProcessorUrl from "../worklets/MSFProcessor.ts?url";
 
 /**
  * Manages the processing of a selected audio stream.
@@ -16,7 +17,10 @@ export class Processor {
   private unsubDisplayMode: Unsubscriber;
 
   private stream?: MediaStream;
-  private source?: MediaStreamAudioSourceNode | AudioBufferSourceNode;
+  private source?:
+    | MediaStreamAudioSourceNode
+    | AudioBufferSourceNode
+    | OscillatorNode;
   private filter?: BiquadFilterNode;
   private comparator?: AudioWorkletNode;
   private msf?: AudioWorkletNode;
@@ -132,7 +136,7 @@ export class Processor {
 
     this.comparator = new ComparatorNode(this.context, {
       polarity: "negative",
-      thresholdWindowSec: 2,
+      thresholdWindowSec: 20,
     });
     this.filter.connect(this.comparator);
 

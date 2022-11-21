@@ -1,4 +1,4 @@
-import type { TimeFrame } from "./msf";
+import type { TimeFrame } from "../processing/msf";
 
 const msfProcessorName = "msf-processor";
 
@@ -8,10 +8,14 @@ export interface MSFOptions {
 
 export interface MinuteMark {
   msg: "minute";
+
+  audioTime: number;
 }
 
 export interface SecondMark {
   msg: "second";
+
+  audioTime: number;
 
   /// 0 to 59
   second: number;
@@ -22,6 +26,8 @@ export interface SecondMark {
 
 export interface InvalidMark {
   msg: "invalid";
+
+  audioTime: number;
 
   reason: string;
 

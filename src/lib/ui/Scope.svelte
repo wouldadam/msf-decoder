@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { defaultProcessorKey, Processor } from "./Processor";
-  import Chart from "./Chart.svelte";
   import { getContext } from "svelte";
+  import { defaultProcessorKey, Processor } from "../processing/Processor";
+  import Chart from "./Chart.svelte";
 
   const style = getComputedStyle(document.querySelector(":root"));
   const lineStyle = `hsla(${style.getPropertyValue("--p")})`;

@@ -7,12 +7,12 @@
     displayMode,
     playback,
   } from "./lib/config";
-  import Config from "./lib/Config.svelte";
-  import Placeholder from "./lib/Placeholder.svelte";
-  import { defaultProcessorKey, Processor } from "./lib/Processor";
-  import Scan from "./lib/Scan.svelte";
-  import Scope from "./lib/Scope.svelte";
-  import Waterfall from "./lib/Waterfall.svelte";
+  import { defaultProcessorKey, Processor } from "./lib/processing/Processor";
+  import Config from "./lib/ui/Config.svelte";
+  import Placeholder from "./lib/ui/Placeholder.svelte";
+  import Scan from "./lib/ui/Scan.svelte";
+  import Scope from "./lib/ui/Scope.svelte";
+  import Waterfall from "./lib/ui/Waterfall.svelte";
 
   const processor = new Processor(
     audioSource,

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { getContext } from "svelte";
+  import { carrierFrequencyHz } from "../config";
+  import { defaultProcessorKey, Processor } from "../processing/Processor";
   import Chart from "./Chart.svelte";
-  import { carrierFrequencyHz } from "./config";
-  import { defaultProcessorKey, Processor } from "./Processor";
 
   const style = getComputedStyle(document.querySelector(":root"));
   const lineStyle = `hsla(${style.getPropertyValue("--p")})`;

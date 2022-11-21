@@ -5,7 +5,7 @@ import {
   minuteSegment,
   offsets,
   type TimeFrame,
-} from "./msf";
+} from "../processing/msf";
 import { MSFProcessor } from "./MSFProcessor";
 
 const symbolRate = 10;

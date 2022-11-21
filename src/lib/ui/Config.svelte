@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import MdInput from "svelte-icons/md/MdInput.svelte";
-  import MdGraphicEq from "svelte-icons/md/MdGraphicEq.svelte";
   import GiComputing from "svelte-icons/gi/GiComputing.svelte";
+  import MdGraphicEq from "svelte-icons/md/MdGraphicEq.svelte";
+  import MdInput from "svelte-icons/md/MdInput.svelte";
   import MdPlayArrow from "svelte-icons/md/MdPlayArrow.svelte";
   import MdStop from "svelte-icons/md/MdStop.svelte";
   import MdVolumeOff from "svelte-icons/md/MdVolumeOff.svelte";
@@ -15,7 +15,7 @@
     displayMode,
     playback,
     type OnOffState,
-  } from "./config";
+  } from "../config";
 
   let devices: MediaDeviceInfo[] | null = null;
   let audioFileInput: HTMLInputElement | null = null;
