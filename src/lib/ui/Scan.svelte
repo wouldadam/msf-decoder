@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getContext } from "svelte";
-  import { carrierFrequencyHz } from "../config";
+  import { carrierFrequencyHz, displayMode } from "../config";
   import { defaultProcessorKey, Processor } from "../processing/Processor";
   import Chart from "./Chart.svelte";
 
@@ -67,7 +67,9 @@
 
     ctx.stroke();
 
-    drawCarrier(ctx);
+    if ($displayMode === "raw" || $displayMode === "filter") {
+      drawCarrier(ctx);
+    }
   }
 
   function drawCarrier(ctx: CanvasRenderingContext2D) {
@@ -88,9 +90,11 @@
 
   function onClick(e: MouseEvent) {
     if (e.target instanceof HTMLCanvasElement) {
-      const width = e.target.width;
-      const freqPerPx = freqMax / width;
-      $carrierFrequencyHz = Math.round(freqPerPx * e.offsetX);
+      if ($displayMode === "raw" || $displayMode === "filter") {
+        const width = e.target.width;
+        const freqPerPx = freqMax / width;
+        $carrierFrequencyHz = Math.round(freqPerPx * e.offsetX);
+      }
     }
   }
 </script>

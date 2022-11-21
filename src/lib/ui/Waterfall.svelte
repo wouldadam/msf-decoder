@@ -2,7 +2,7 @@
   import chroma from "chroma-js";
   import { getContext, onMount } from "svelte";
   import SvelteResizeObserver from "svelte-resize-observer";
-  import { carrierFrequencyHz } from "../config";
+  import { carrierFrequencyHz, displayMode } from "../config";
   import { defaultProcessorKey, Processor } from "../processing/Processor";
 
   export let targetFps: number = 120;
@@ -96,6 +96,7 @@
 
     drawAxes(waterfallCtx);
     drawLine(waterfallCtx);
+
     drawCarrier(carrierCtx);
   }
 
@@ -162,18 +163,22 @@
 
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-    ctx.strokeStyle = carrierStyle;
-    ctx.lineWidth = 1;
+    if ($displayMode === "raw" || $displayMode === "filter") {
+      ctx.strokeStyle = carrierStyle;
+      ctx.lineWidth = 1;
 
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height - 1);
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height - 1);
+      ctx.stroke();
+    }
   }
 
   function onClick(e: MouseEvent) {
-    const freqPerPx = freqMax / carrierCtx.canvas.width;
-    $carrierFrequencyHz = Math.round(freqPerPx * e.offsetX);
+    if ($displayMode === "raw" || $displayMode === "filter") {
+      const freqPerPx = freqMax / carrierCtx.canvas.width;
+      $carrierFrequencyHz = Math.round(freqPerPx * e.offsetX);
+    }
   }
 </script>
 
