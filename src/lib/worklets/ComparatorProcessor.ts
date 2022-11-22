@@ -13,12 +13,6 @@ export class ComparatorProcessor extends AudioWorkletProcessor {
   private on = 1;
   private off = 0;
 
-  private sampleMin = Number.MAX_VALUE;
-  private sampleMax = Number.MIN_VALUE;
-
-  private lastThresholdUpdateSec = Number.MIN_VALUE;
-  private threshold = 0.0;
-
   constructor(private options: ComparatorProcessorOptions) {
     super();
 
@@ -36,28 +30,18 @@ export class ComparatorProcessor extends AudioWorkletProcessor {
     outputs: Float32Array[][],
     parameters: Record<string, Float32Array>
   ): boolean {
-    if (
-      currentTime - this.lastThresholdUpdateSec >
-      this.options.processorOptions.thresholdWindowSec
-    ) {
-      this.threshold = (this.sampleMax + this.sampleMin) / 2;
-      this.sampleMin = Number.MAX_VALUE;
-      this.sampleMax = Number.MIN_VALUE;
-      this.lastThresholdUpdateSec = currentTime;
-    }
     const input = inputs[0][0];
     const output = outputs[0][0];
 
     for (let sampleIdx = 0; sampleIdx < input.length; ++sampleIdx) {
       let sample = input[sampleIdx];
       let bit = this.off;
-      if (sample > this.threshold) {
+
+      if (sample > this.options.processorOptions.threshold) {
         bit = this.on;
       }
-      output[sampleIdx] = bit;
 
-      this.sampleMin = Math.min(sample, this.sampleMin);
-      this.sampleMax = Math.max(sample, this.sampleMax);
+      output[sampleIdx] = bit;
     }
     return true;
   }

@@ -4,8 +4,8 @@ export interface ComparatorOptions {
   /// Should high or low samples be considered a 1.
   polarity: "positive" | "negative";
 
-  /// Over what time period should the dynamic threshold look.
-  thresholdWindowSec: number;
+  /// Values over the threshold will be considered on.
+  threshold: number;
 }
 
 /**

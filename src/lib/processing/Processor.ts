@@ -147,7 +147,7 @@ export class Processor {
 
     this.comparator = new ComparatorNode(this.context, {
       polarity: "negative",
-      thresholdWindowSec: 20,
+      threshold: 0.05,
     });
     this.rms.connect(this.comparator);
 

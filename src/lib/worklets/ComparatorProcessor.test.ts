@@ -15,7 +15,7 @@ test.each([["positive"], ["negative"]])(
     const processor = new ComparatorProcessor({
       processorOptions: {
         polarity,
-        thresholdWindowSec,
+        threshold: 0,
       },
     });
 
