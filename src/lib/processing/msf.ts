@@ -277,15 +277,25 @@ export function parseSecond(
   // Negative DUT1
   else if (
     currentSecond >= offsets.dut1Neg[0] &&
-    currentSecond <= offsets.dut1Neg[1] &&
-    bits.at(bBitOffset) === 1
+    currentSecond <= offsets.dut1Neg[1]
   ) {
-    if (currentFrame.dut1 !== undefined) {
-      return Error("multiple dut1 bits set");
+    if (bits.at(bBitOffset) === 1) {
+      if (currentFrame.dut1 !== undefined) {
+        return Error("multiple dut1 bits set");
+      }
+
+      const absDut1 = currentSecond - offsets.dut1Neg[1] - 1;
+      currentFrame.dut1 = (absDut1 / 10) as DUT1;
     }
 
-    const absDut1 = currentSecond - offsets.dut1Neg[1] - 1;
-    currentFrame.dut1 = (absDut1 / 10) as DUT1;
+    // End of DUT1, no bits set
+    if (
+      currentSecond === offsets.dut1Neg[1] &&
+      currentFrame.dut1 === undefined &&
+      newFrame.dut1 === undefined
+    ) {
+      newFrame.dut1 = 0;
+    }
   }
   // Date
   else if (
