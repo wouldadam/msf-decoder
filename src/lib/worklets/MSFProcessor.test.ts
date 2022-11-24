@@ -172,125 +172,90 @@ function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
   return ops;
 }
 
-test("decode full frame", () => {
-  const samplesPerSymbol = sampleRate / symbolRate;
+// Offset is multiplier on samplesPerSymbol
+test.each([0, 0.25, 0.5, 0.75, 1, 60])(
+  "decode full frame with %dx symbol offset",
+  (offset: number) => {
+    const samplesPerSymbol = sampleRate / symbolRate;
 
-  // Create a processor
-  const processor = new MSFProcessor({
-    processorOptions: {
-      symbolRate,
-    },
-  });
+    // Create a processor
+    const processor = new MSFProcessor({
+      processorOptions: {
+        symbolRate,
+      },
+    });
 
-  // Create each of the message segments to send
-  const frame: TimeFrame = {
-    dut1: 0.1,
-    year: 33,
-    month: 10,
-    dayOfMonth: 11,
-    dayOfWeek: DayOfWeek.Monday,
-    hour: 20,
-    minute: 44,
-    summerTimeWarning: false,
-    summerTime: true,
-  };
+    // Create each of the message segments to send
+    const frame: TimeFrame = {
+      dut1: 0.1,
+      year: 33,
+      month: 10,
+      dayOfMonth: 11,
+      dayOfWeek: DayOfWeek.Monday,
+      hour: 20,
+      minute: 44,
+      summerTimeWarning: false,
+      summerTime: true,
+    };
 
-  const segments: Array<InputDesc> = createFrameSegments(frame);
+    const segments: Array<InputDesc> = createFrameSegments(frame);
 
-  // Turn them into bits
-  const input = createInput(segments);
+    // Insert any offset samples
+    const sampleOffset = samplesPerSymbol * offset;
+    segments.unshift(zeroDesc(sampleOffset));
 
-  // Funnel all the data into the processor
-  feedProcessor(processor, input);
+    // Turn them into bits
+    const input = createInput(segments);
 
-  // Check we got the expected decode messages
-  expect(processor.port.postMessage).toBeCalledTimes(60);
+    // Funnel all the data into the processor
+    feedProcessor(processor, input);
 
-  // Should start with a minute
-  expect(processor.port.postMessage).toHaveBeenNthCalledWith(
-    1,
-    expect.objectContaining({
-      msg: "minute",
-    })
-  );
+    // Check we got the expected decode messages
+    expect(processor.port.postMessage).toBeCalledTimes(60);
 
-  // Should have 59 second markers
-  for (let call = 2; call <= 60; ++call) {
+    // Should start with a minute
     expect(processor.port.postMessage).toHaveBeenNthCalledWith(
-      call,
+      1,
+      expect.objectContaining({
+        msg: "minute",
+      })
+    );
+
+    // Should have 59 second markers
+    for (let call = 2; call <= 60; ++call) {
+      expect(processor.port.postMessage).toHaveBeenNthCalledWith(
+        call,
+        expect.objectContaining({
+          msg: "second",
+          second: call - 1,
+        })
+      );
+    }
+
+    // Last second should contain full frame with all fields complete and parity checks valid
+    const expectedFrame: TimeFrame = {
+      ...frame,
+      yearComplete: true,
+      monthComplete: true,
+      dayOfMonthComplete: true,
+      dayOfWeekComplete: true,
+      hourComplete: true,
+      minuteComplete: true,
+      yearParityValid: true,
+      dayParityValid: true,
+      dayOfWeekParityValid: true,
+      timeParityValid: true,
+    };
+    expect(processor.port.postMessage).toHaveBeenNthCalledWith(
+      60,
       expect.objectContaining({
         msg: "second",
-        second: call - 1,
+        second: 59,
+        frame: expect.objectContaining(expectedFrame),
       })
     );
   }
-
-  // Last second should contain full frame with all fields complete and parity checks valid
-  const expectedFrame: TimeFrame = {
-    ...frame,
-    yearComplete: true,
-    monthComplete: true,
-    dayOfMonthComplete: true,
-    dayOfWeekComplete: true,
-    hourComplete: true,
-    minuteComplete: true,
-    yearParityValid: true,
-    dayParityValid: true,
-    dayOfWeekParityValid: true,
-    timeParityValid: true,
-  };
-  expect(processor.port.postMessage).toHaveBeenNthCalledWith(
-    60,
-    expect.objectContaining({
-      msg: "second",
-      second: 59,
-      frame: expect.objectContaining(expectedFrame),
-    })
-  );
-});
-
-test.todo("decode offset frame", () => {
-  const samplesPerSymbol = sampleRate / symbolRate;
-
-  // Create a processor
-  const processor = new MSFProcessor({
-    processorOptions: {
-      symbolRate,
-    },
-  });
-
-  // Create each of the message segments to send
-  const frame: TimeFrame = {
-    dut1: 0.1,
-    year: 33,
-    month: 10,
-    dayOfMonth: 11,
-    dayOfWeek: DayOfWeek.Monday,
-    hour: 20,
-    minute: 44,
-    summerTimeWarning: false,
-    summerTime: false,
-  };
-
-  const segments: Array<InputDesc> = createFrameSegments(frame);
-
-  // Insert 1/2 a symbol of zeros to throw the processor out of alignment
-  segments.unshift(zeroDesc(samplesPerSymbol / 2));
-
-  // Turn them into signal bits
-  const input = createInput(segments);
-
-  // Funnel all the data into the processor
-  feedProcessor(processor, input);
-
-  // Check we got the expected decode messages
-  expect(processor.port.postMessage).toBeCalledTimes(60);
-  expect(processor.port.postMessage).toBeCalledWith(
-    expect.objectContaining({
-      msg: "minute",
-    })
-  );
-});
+);
 
 test.todo("decode frame with failed parity", () => {});
 test.todo("decode frame with bad bits", () => {});

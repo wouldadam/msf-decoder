@@ -3,7 +3,6 @@ import {
   isSecondSegment,
   minuteSegment,
   parseSecond,
-  secondSegment,
   validateFixedBits,
   type TimeFrame,
 } from "../processing/msf";
@@ -16,9 +15,21 @@ import type {
 } from "./MSFNode";
 
 const msfProcessorName = "msf-processor";
+const symbolsPerSegment = minuteSegment.length;
+const maxSegments = 5;
 
 interface MSFProcessorOptions extends AudioWorkletNodeOptions {
   processorOptions: MSFOptions;
+}
+
+/// Put the first 10 elements (or max) in a string
+function first10(buffer: RingBuffer) {
+  let result = "";
+  for (let idx = 0; idx < Math.min(10, buffer.length); ++idx) {
+    result += buffer.at(idx).toString();
+  }
+
+  return result;
 }
 
 /**
@@ -28,34 +39,162 @@ interface MSFProcessorOptions extends AudioWorkletNodeOptions {
  */
 export class MSFProcessor extends AudioWorkletProcessor {
   private samplesPerSymbol: number;
+  private samplesPerSegment: number;
 
-  private inputBuffer: RingBuffer; /// Raw input samples
+  private inputRing: RingBuffer; /// Raw input samples
+  private syncBuffer: Float32Array; /// Tmp buffer for time sync
+  private syncedRing: RingBuffer; /// Synced input samples
   private demodBuffer: Float32Array; /// Tmp buffer for processing input samples
-  private symbolBuffer: RingBuffer; /// Demodulated bits into symbols
-
-  private syncBuffer: Float32Array;
+  private symbolRing: RingBuffer; /// Demodulated bits into symbols
 
   private isFrameStarted: boolean; /// Are we currently processing a frame
   private currentSecond: number; /// What second are we on
 
   private currentFrame: TimeFrame; /// The currently decoded TimeFrame
 
-  private once = false;
-
   constructor(options: MSFProcessorOptions) {
     super();
 
     this.samplesPerSymbol = sampleRate / options.processorOptions.symbolRate;
+    this.samplesPerSegment = this.samplesPerSymbol * symbolsPerSegment;
 
-    this.inputBuffer = new RingBuffer(65 * this.samplesPerSymbol);
-    this.demodBuffer = new Float32Array(this.samplesPerSymbol);
-    this.symbolBuffer = new RingBuffer(2 * 60);
-
-    this.syncBuffer = new Float32Array(this.samplesPerSymbol);
+    this.inputRing = new RingBuffer(maxSegments * this.samplesPerSegment);
+    this.syncBuffer = new Float32Array(this.samplesPerSegment);
+    this.syncedRing = new RingBuffer(maxSegments * this.samplesPerSegment);
+    this.demodBuffer = new Float32Array(this.samplesPerSymbol); // Always take 1 full symbol
+    this.symbolRing = new RingBuffer((maxSegments + 1) * symbolsPerSegment);
 
     this.isFrameStarted = false;
     this.currentSecond = -1;
     this.currentFrame = {};
+  }
+
+  process(
+    inputs: Float32Array[][],
+    outputs: Float32Array[][],
+    parameters: Record<string, Float32Array>
+  ): boolean {
+    // Store the input for later processing
+    this.storeInput(inputs[0][0]);
+
+    // Process the input, performing any synchronization
+    this.processInput();
+
+    // Turn the samples into symbols
+    this.processSamples();
+
+    // Process any available symbols into segments
+    this.processSymbols();
+
+    return true;
+  }
+
+  /// Store samples until we have enough to process
+  private storeInput(input: Float32Array) {
+    if (this.inputRing.length > this.inputRing.capacity - 128) {
+      console.error("Input buffer full");
+    }
+    this.inputRing.push(input);
+  }
+
+  /// Synchronize stored samples across segments
+  private processInput() {
+    if (this.inputRing.length >= this.syncBuffer.length) {
+      let syncMax = Number.MIN_VALUE;
+      let syncMaxIdx = 0;
+
+      // Only process full segments
+      let fullSegmentSamplesCount =
+        Math.floor(this.inputRing.length / this.samplesPerSegment) *
+        this.samplesPerSegment;
+
+      // Find the periodic max value, this should be where the segments start
+      // as the first symbol is always 1, this isn't the case for any other symbol position.
+      for (let sampIdx = 0; sampIdx < fullSegmentSamplesCount; ++sampIdx) {
+        const syncIdx = sampIdx % this.syncBuffer.length;
+        this.syncBuffer[syncIdx] += this.inputRing.at(sampIdx);
+
+        if (this.syncBuffer[syncIdx] > syncMax) {
+          syncMax = this.syncBuffer[syncIdx];
+          syncMaxIdx = syncIdx;
+        }
+      }
+
+      if (syncMaxIdx > 0 && syncMax > 0) {
+        this.inputRing.skip(syncMaxIdx);
+        this.syncBuffer.fill(0);
+
+        // We might have fewer segments after skipping some samples
+        fullSegmentSamplesCount =
+          Math.floor(this.inputRing.length / this.samplesPerSegment) *
+          this.samplesPerSegment;
+      }
+
+      // Copy full segments into syncedRing
+      for (let idx = 0; idx < fullSegmentSamplesCount; ++idx) {
+        this.syncedRing.push([this.inputRing.at(idx)]);
+      }
+      this.inputRing.skip(fullSegmentSamplesCount);
+    }
+  }
+
+  /// Turn synced samples into symbols
+  private processSamples() {
+    while (this.syncedRing.length >= this.demodBuffer.length) {
+      this.syncedRing.pull(this.demodBuffer);
+      const sum = this.demodBuffer.reduce((sum, val) => sum + val, 0);
+
+      if (this.symbolRing.length === this.symbolRing.capacity) {
+        console.error("Symbol buffer full");
+      }
+
+      if (sum > this.demodBuffer.length / 2) {
+        this.symbolRing.push([1]);
+      } else {
+        this.symbolRing.push([0]);
+      }
+    }
+  }
+
+  /// Process the symbols into full time frames
+  private processSymbols() {
+    // If we have enough symbols for a whole segment try to parse
+    while (this.symbolRing.length >= symbolsPerSegment) {
+      if (this.isFrameStarted) {
+        this.currentSecond += 1;
+        if (isSecondSegment(this.symbolRing)) {
+          // We found a second segment, process it
+          this.parseSecond();
+
+          // Remove the segment from the buffer
+          this.symbolRing.skip(symbolsPerSegment);
+        } else {
+          // We found invalid data inside a frame
+          this.invalidSegment(
+            `segment contains invalid data: ${first10(this.symbolRing)}`
+          );
+        }
+      } else if (isMinuteSegment(this.symbolRing)) {
+        // We found a minute segment
+        this.startFrame();
+
+        // Notify the Node
+        const mark: MinuteMark = { msg: "minute", audioTime: currentTime };
+        this.port.postMessage(mark);
+
+        // Remove the segment from the buffer
+        this.symbolRing.skip(symbolsPerSegment);
+      } else {
+        if (isSecondSegment(this.symbolRing)) {
+          console.warn(
+            `Found a second outside of a frame. ${first10(this.symbolRing)}`,
+            currentTime
+          );
+        }
+
+        this.symbolRing.skip(1);
+      }
+    }
   }
 
   /// Start processing a frame
@@ -87,16 +226,16 @@ export class MSFProcessor extends AudioWorkletProcessor {
     this.endFrame();
   }
 
-  // Process the start of the symbol buffer as if it is a second
-  private processSecond() {
-    if (!validateFixedBits(this.symbolBuffer, this.currentSecond)) {
+  // Parses the start of the symbol ring as if it is a second
+  private parseSecond() {
+    if (!validateFixedBits(this.symbolRing, this.currentSecond)) {
       this.invalidSegment("invalid fixed bits");
       return;
     }
 
     // Parse it
     const frameUpdate = parseSecond(
-      this.symbolBuffer,
+      this.symbolRing,
       this.currentSecond,
       this.currentFrame
     );
@@ -120,60 +259,6 @@ export class MSFProcessor extends AudioWorkletProcessor {
     if (this.currentSecond >= 59) {
       this.endFrame();
     }
-  }
-
-  process(
-    inputs: Float32Array[][],
-    outputs: Float32Array[][],
-    parameters: Record<string, Float32Array>
-  ): boolean {
-    // Store samples until we have enough to process
-    this.inputBuffer.push(inputs[0][0]);
-
-    // If we have enough input, Demod into output buffer
-    while (this.inputBuffer.length >= this.samplesPerSymbol) {
-      this.inputBuffer.pull(this.demodBuffer);
-      const sum = this.demodBuffer.reduce((sum, val) => sum + val, 0);
-
-      if (sum > this.samplesPerSymbol / 2) {
-        this.symbolBuffer.push([1]);
-      } else {
-        this.symbolBuffer.push([0]);
-      }
-    }
-
-    // If we have enough symbols try to parse them
-    while (this.symbolBuffer.length >= minuteSegment.length) {
-      if (this.isFrameStarted) {
-        if (isSecondSegment(this.symbolBuffer)) {
-          // We found a second segment
-          this.currentSecond += 1;
-
-          // Process the second
-          this.processSecond();
-
-          // Remove the segment from the buffer
-          this.symbolBuffer.skip(secondSegment.length);
-        } else {
-          // We found invalid data inside a frame
-          this.invalidSegment("segment contains invalid data");
-        }
-      } else if (isMinuteSegment(this.symbolBuffer)) {
-        // We found a minute segment
-        this.startFrame();
-
-        // Notify the Node
-        const mark: MinuteMark = { msg: "minute", audioTime: currentTime };
-        this.port.postMessage(mark);
-
-        // Remove the segment from the buffer
-        this.symbolBuffer.skip(minuteSegment.length);
-      } else {
-        this.symbolBuffer.skip(1);
-      }
-    }
-
-    return true;
   }
 }
 
