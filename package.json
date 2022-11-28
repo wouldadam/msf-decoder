@@ -14,9 +14,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "devDependencies": {
+    "@storybook/addon-essentials": "^7.0.0-alpha.54",
+    "@storybook/addon-interactions": "^7.0.0-alpha.54",
+    "@storybook/addon-links": "^7.0.0-alpha.54",
+    "@storybook/builder-vite": "^7.0.0-alpha.54",
+    "@storybook/svelte": "^7.0.0-alpha.54",
+    "@storybook/svelte-vite": "^7.0.0-alpha.54",
+    "@storybook/testing-library": "^0.0.13",
     "@sveltejs/vite-plugin-svelte": "^1.0.2",
     "@testing-library/dom": "^8.19.0",
     "@testing-library/jest-dom": "^5.16.5",
@@ -33,6 +42,7 @@
     "jsdom": "^20.0.1",
     "postcss": "^8.4.18",
     "resize-observer-polyfill": "^1.5.1",
+    "storybook": "^7.0.0-alpha.54",
     "svelte": "^3.49.0",
     "svelte-check": "^2.8.1",
     "svelte-icons": "^2.1.0",
@@ -44,5 +54,6 @@
     "vite": "^3.1.0",
     "vitest": "^0.24.3",
     "vitest-canvas-mock": "^0.2.0"
-  }
+  },
+  "dependencies": {}
 }
