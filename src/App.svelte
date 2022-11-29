@@ -8,7 +8,9 @@
     playback,
   } from "./lib/config";
   import { defaultProcessorKey, Processor } from "./lib/processing/Processor";
+  import { timeStore } from "./lib/time";
   import Config from "./lib/ui/Config.svelte";
+  import Frames from "./lib/ui/Frames.svelte";
   import Placeholder from "./lib/ui/Placeholder.svelte";
   import Scan from "./lib/ui/Scan.svelte";
   import Scope from "./lib/ui/Scope.svelte";
@@ -19,7 +21,8 @@
     carrierFrequencyHz,
     playback,
     audio,
-    displayMode
+    displayMode,
+    timeStore
   );
 
   setContext(defaultProcessorKey, processor);
@@ -50,16 +53,16 @@
         <Config />
       </div>
 
-      <div class="h-full">
-        <Placeholder title="Decode" />
+      <div>
+        <Frames />
       </div>
 
       <div>
-        <Placeholder title="Demod" />
+        <Placeholder title="Time" />
       </div>
 
       <div>
-        <Placeholder title="Advanced" />
+        <Placeholder title="Events" />
       </div>
     </div>
   </div>

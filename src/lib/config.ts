@@ -5,7 +5,7 @@ import { writable } from "svelte/store";
  * The MSF carrier frequency in the input audio.
  * This isn't 60kHz as the audio source will playing an audible tone.
  */
-export const carrierFrequencyHz = writable(500);
+export const carrierFrequencyHz = writable(1000);
 
 /**
  * The audio source that should be used to pull audio.

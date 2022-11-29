@@ -1,9 +1,15 @@
-import { get, type Readable, type Unsubscriber } from "svelte/store";
+import {
+  get,
+  type Readable,
+  type Unsubscriber,
+  type Writable,
+} from "svelte/store";
 import type { DisplayMode, OnOffState, PlaybackState } from "../config";
 import { ComparatorNode } from "../worklets/ComparatorNode";
 import { MSFNode } from "../worklets/MSFNode";
 import { RMSNode } from "../worklets/RMSNode";
 
+import type { TimeStore } from "../time";
 import comparatorProcessorUrl from "../worklets/ComparatorProcessor.ts?url";
 import msfProcessorUrl from "../worklets/MSFProcessor.ts?url";
 import rmsProcessorUrl from "../worklets/RMSProcessor.ts?url";
@@ -26,9 +32,9 @@ export class Processor {
   private filter?: BiquadFilterNode;
   private rms?: AudioWorkletNode;
   private comparator?: AudioWorkletNode;
-  private msf?: AudioWorkletNode;
 
   public context?: AudioContext;
+  public msf?: MSFNode;
   public analyser?: AnalyserNode;
 
   constructor(
@@ -36,7 +42,8 @@ export class Processor {
     private carrierFrequencyStore: Readable<number>,
     private playbackStore: Readable<PlaybackState>,
     private audioStore: Readable<OnOffState>,
-    private displayModeStore: Readable<DisplayMode>
+    private displayModeStore: Readable<DisplayMode>,
+    private timeStore: Writable<TimeStore>
   ) {
     this.unsubAudioSource = audioSourceStore.subscribe(
       this.onAudioSourceChange
@@ -151,12 +158,13 @@ export class Processor {
     });
     this.rms.connect(this.comparator);
 
-    this.msf = new MSFNode(this.context, {
-      symbolRate: 10,
-    });
-    this.msf.port.onmessage = (ev: MessageEvent) => {
-      console.debug(ev.data);
-    };
+    this.msf = new MSFNode(
+      this.context,
+      {
+        symbolRate: 10,
+      },
+      this.timeStore
+    );
     this.comparator.connect(this.msf);
 
     this.analyser = this.context.createAnalyser();
