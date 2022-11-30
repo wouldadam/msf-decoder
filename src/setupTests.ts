@@ -1,5 +1,3 @@
-import { vi } from "vitest";
-
 // Mock the ResizeObserver API
 import ResizeObserverPolyfill from "resize-observer-polyfill";
 if (!global.ResizeObserver) {

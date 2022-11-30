@@ -72,8 +72,8 @@ export class MSFProcessor extends AudioWorkletProcessor {
 
   process(
     inputs: Float32Array[][],
-    outputs: Float32Array[][],
-    parameters: Record<string, Float32Array>
+    _outputs: Float32Array[][],
+    _parameters: Record<string, Float32Array>
   ): boolean {
     // Store the input for later processing
     this.storeInput(inputs[0][0]);
