@@ -1,14 +1,14 @@
 <script lang="ts">
-  export let value: any;
-  export let isComplete: boolean;
-  export let isValid: boolean;
+  import { ValueState, type FrameValue } from "../processing/msf";
+
+  export let value: FrameValue<any>;
   export let padChar: string = "0";
   export let padWidth: number = 2;
   export let fallbackChar: string = "-";
 
-  const pad = (value: number | undefined, char: string, width: number) => {
-    if (value !== undefined) {
-      return value.toString().padStart(width, char);
+  const pad = (value: FrameValue<any>, char: string, width: number) => {
+    if (value.state !== ValueState.Unset) {
+      return value.val.toString().padStart(width, char);
     }
 
     return "".padStart(width, fallbackChar);
@@ -27,10 +27,10 @@
 -->
 <span
   class="contents"
-  class:text-warning={value !== undefined && !isComplete}
-  class:text-info={isComplete === true && isValid === undefined}
-  class:text-error={isComplete === true && isValid === false}
-  class:text-success={isComplete === true && isValid === true}
+  class:text-warning={value.state === ValueState.Incomplete}
+  class:text-info={value.state === ValueState.Complete}
+  class:text-error={value.state === ValueState.Invalid}
+  class:text-success={value.state === ValueState.Valid}
 >
   {content}
 </span>

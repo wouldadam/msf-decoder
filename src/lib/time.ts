@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import type { TimeFrame } from "./processing/msf";
+import { CreateTimeFrame, type TimeFrame } from "./processing/msf";
 
 export interface TimeStore {
   /// The frame currently being processed
@@ -13,7 +13,8 @@ export interface TimeStore {
 }
 
 export const timeStore: Writable<TimeStore> = writable({
-  currentFrame: {},
-  previousFrame: {},
+  currentTime: CreateTimeFrame(),
+  currentFrame: CreateTimeFrame(),
+  previousFrame: CreateTimeFrame(),
   second: null,
 });

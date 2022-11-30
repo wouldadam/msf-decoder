@@ -1,4 +1,5 @@
 import {
+  CreateTimeFrame,
   isMinuteSegment,
   isSecondSegment,
   minuteSegment,
@@ -66,7 +67,7 @@ export class MSFProcessor extends AudioWorkletProcessor {
 
     this.isFrameStarted = false;
     this.currentSecond = -1;
-    this.currentFrame = {};
+    this.currentFrame = CreateTimeFrame();
   }
 
   process(
@@ -207,7 +208,7 @@ export class MSFProcessor extends AudioWorkletProcessor {
   private endFrame() {
     this.isFrameStarted = false;
     this.currentSecond = -1;
-    this.currentFrame = {};
+    this.currentFrame = CreateTimeFrame();
   }
 
   /// Handle an invalid frame, ends frame processing
@@ -218,7 +219,7 @@ export class MSFProcessor extends AudioWorkletProcessor {
       audioTime: currentTime,
       reason,
       second: this.currentSecond + 1,
-      frame: {},
+      frame: CreateTimeFrame(),
     };
     this.port.postMessage(mark);
 
@@ -234,16 +235,14 @@ export class MSFProcessor extends AudioWorkletProcessor {
     }
 
     // Parse it
-    const frameUpdate = parseSecond(
+    const result = parseSecond(
       this.symbolRing,
       this.currentSecond,
       this.currentFrame
     );
 
-    if (frameUpdate instanceof Error) {
-      this.invalidSegment(frameUpdate.message);
-    } else {
-      this.currentFrame = { ...this.currentFrame, ...frameUpdate };
+    if (result instanceof Error) {
+      this.invalidSegment(result.message);
     }
 
     // Notify the node

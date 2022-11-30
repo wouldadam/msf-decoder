@@ -1,4 +1,9 @@
-import { DayOfWeek, type TimeFrame } from "../processing/msf";
+import {
+  CreateTimeFrame,
+  DayOfWeek,
+  ValueState,
+  type TimeFrame,
+} from "../processing/msf";
 import TimeFrameComp from "./TimeFrame.svelte";
 
 export default {
@@ -7,47 +12,38 @@ export default {
 };
 
 const basicFrame = {
-  year: 23,
-  month: 2,
-  dayOfMonth: 11,
-  dayOfWeek: DayOfWeek.Friday,
-  hour: 19,
-  minute: 44,
+  dut1: { val: 0.1, state: ValueState.Incomplete, bitCount: 0 },
+  year: { val: 23, state: ValueState.Incomplete, bitCount: 0 },
+  month: { val: 2, state: ValueState.Incomplete, bitCount: 0 },
+  dayOfMonth: { val: 11, state: ValueState.Incomplete, bitCount: 0 },
+  dayOfWeek: {
+    val: DayOfWeek.Friday,
+    state: ValueState.Incomplete,
+    bitCount: 0,
+  },
+  hour: { val: 19, state: ValueState.Incomplete, bitCount: 0 },
+  minute: { val: 44, state: ValueState.Incomplete, bitCount: 0 },
+  summerTimeWarning: { val: false, state: ValueState.Incomplete, bitCount: 0 },
+  summerTime: { val: false, state: ValueState.Incomplete, bitCount: 0 },
 } as TimeFrame;
 
-const completeFrame = {
-  ...basicFrame,
-  yearComplete: true,
-  monthComplete: true,
-  dayOfMonthComplete: true,
-  dayOfWeekComplete: true,
-  hourComplete: true,
-  minuteComplete: true,
-  dut1: 0.1,
-  summerTimeWarning: false,
-  summerTime: false,
-} as TimeFrame;
+const completeFrame = JSON.parse(JSON.stringify(basicFrame)) as TimeFrame;
+Object.values(completeFrame).forEach(
+  (value) => (value.state = ValueState.Complete)
+);
 
-const validFrame = {
-  ...completeFrame,
-  yearParityValid: true,
-  dayParityValid: true,
-  dayOfWeekParityValid: true,
-  timeParityValid: true,
-  summerTimeWarning: true,
-  summerTime: true,
-} as TimeFrame;
+const validFrame = JSON.parse(JSON.stringify(basicFrame)) as TimeFrame;
+validFrame.summerTime.val = true;
+validFrame.summerTimeWarning.val = true;
+Object.values(validFrame).forEach((value) => (value.state = ValueState.Valid));
 
-const invalidFrame = {
-  ...completeFrame,
-  yearParityValid: false,
-  dayParityValid: false,
-  dayOfWeekParityValid: false,
-  timeParityValid: false,
-} as TimeFrame;
+const invalidFrame = JSON.parse(JSON.stringify(basicFrame)) as TimeFrame;
+Object.values(invalidFrame).forEach(
+  (value) => (value.state = ValueState.Invalid)
+);
 
 export const Default = {
-  args: { frame: {} },
+  args: { frame: CreateTimeFrame() },
 };
 
 export const Populated = {

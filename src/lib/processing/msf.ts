@@ -11,6 +11,31 @@ export enum DayOfWeek {
   Saturday = 6,
 }
 
+/// The state of a value
+export enum ValueState {
+  Unset, // Not yet set
+  Incomplete, // Some bits received
+  Complete, // All bits received
+  Valid, // Passed any validation
+  Invalid, // Failed any validation
+}
+
+/// Represents a single value in a TimeFrame
+export interface FrameValue<T> {
+  val: T;
+  state: ValueState;
+  bitCount: number;
+}
+
+/// Creates a default unset frame value
+export function CreateFrameValue<T>(unsetVal: T): FrameValue<T> {
+  return {
+    val: unsetVal,
+    state: ValueState.Unset,
+    bitCount: 0,
+  };
+}
+
 // Allowed DUT1 values
 export type DUT1 =
   | -0.8
@@ -34,91 +59,46 @@ export type DUT1 =
 // Frame of MSF information
 export interface TimeFrame {
   /// -0.8 to +0.8 in 0.1 increments
-  dut1?: DUT1;
+  dut1: FrameValue<DUT1>;
 
   /// 00 to 99
-  year?: number;
-
-  /// Year has been fully decoded
-  yearComplete?: boolean;
-
-  /// The number of bits set in the year
-  yearBitCount?: number;
+  year: FrameValue<number>;
 
   // 01 to 12
-  month?: number;
-
-  /// Month has been fully decoded
-  monthComplete?: boolean;
-
-  /// The number of bits set in the month
-  monthBitCount?: number;
+  month: FrameValue<number>;
 
   /// 01 to 31
-  dayOfMonth?: number;
-
-  /// Day of month has been fully decoded
-  dayOfMonthComplete?: boolean;
-
-  /// The number of bits set in the day of month
-  dayOfMonthBitCount?: number;
+  dayOfMonth: FrameValue<number>;
 
   // Day of the week
-  dayOfWeek?: DayOfWeek;
-
-  /// Day of week has been fully decoded
-  dayOfWeekComplete?: boolean;
-
-  /// The number of bits set in the day of week
-  dayOfWeekBitCount?: number;
+  dayOfWeek: FrameValue<DayOfWeek>;
 
   /// 00 to 23
-  hour?: number;
-
-  /// Hour has been fully decoded
-  hourComplete?: boolean;
-
-  /// The number of bits set in the hour
-  hourBitCount?: number;
+  hour: FrameValue<number>;
 
   /// 00 to 59
-  minute?: number;
-
-  /// Minute has been fully decoded
-  minuteComplete?: boolean;
-
-  /// The number of bits set in the minute
-  minuteBitCount?: number;
+  minute: FrameValue<number>;
 
   /// Indicates that the summer time flag is about to change
-  summerTimeWarning?: boolean;
-
-  /// The odd parity value of the year
-  yearParity?: number;
-
-  /// Indicates if the year parity check passed
-  yearParityValid?: boolean;
-
-  /// The odd parity value of the month + day of month
-  dayParity?: number;
-
-  /// Indicates if the day parity check passed
-  dayParityValid?: boolean;
-
-  /// The odd parity value of the day of week
-  dayOfWeekParity?: number;
-
-  /// Indicates if the dayOfWeek parity check passed
-  dayOfWeekParityValid?: boolean;
-
-  /// The odd parity value of the hour minute
-  timeParity?: number;
-
-  /// Indicates if the time parity check passed
-  timeParityValid?: boolean;
+  summerTimeWarning: FrameValue<boolean>;
 
   /// Indicates that the broadcast is in summer time (UTC+1)
-  summerTime?: boolean;
+  summerTime: FrameValue<boolean>;
+}
+
+/// Create a default initialized TimeFrame
+export function CreateTimeFrame(): TimeFrame {
+  return {
+    dut1: CreateFrameValue(0),
+    year: CreateFrameValue(0),
+    month: CreateFrameValue(0),
+    dayOfMonth: CreateFrameValue(0),
+    dayOfWeek: CreateFrameValue(DayOfWeek.Sunday),
+    hour: CreateFrameValue(0),
+    minute: CreateFrameValue(0),
+    summerTimeWarning: CreateFrameValue(false),
+    summerTime: CreateFrameValue(false),
+  };
 }
 
 /// The symbols for a minute segment
@@ -247,10 +227,16 @@ function bcdBitValue(
   return bcdBits[bit];
 }
 
-function validateParity(bitCount: number, parityBit: number): boolean {
+function validateParity(
+  bitCount: number,
+  parityBit: number
+): ValueState.Valid | ValueState.Invalid {
   const isEven = bitCount % 2 === 0;
   const expectedParityBit = isEven ? 1 : 0;
-  return expectedParityBit === parityBit;
+
+  return expectedParityBit === parityBit
+    ? ValueState.Valid
+    : ValueState.Invalid;
 }
 
 /// Parses the data out of a second segment and returns it in a TimeFrame
@@ -259,20 +245,20 @@ export function parseSecond(
   bits: RingBuffer,
   currentSecond: number,
   currentFrame: TimeFrame
-): TimeFrame | Error {
-  const newFrame: TimeFrame = {};
-
+): Error | null {
   // Positive DUT1
   if (
     currentSecond >= offsets.dut1Pos[0] &&
     currentSecond <= offsets.dut1Pos[1] &&
     bits.at(bBitOffset) === 1
   ) {
-    if (currentFrame.dut1 !== undefined) {
+    if (currentFrame.dut1.state !== ValueState.Unset) {
       return Error("multiple dut1 bits set");
     }
 
-    currentFrame.dut1 = (currentSecond / 10) as DUT1;
+    currentFrame.dut1.val = (currentSecond / 10) as DUT1;
+    currentFrame.dut1.state = ValueState.Incomplete;
+    currentFrame.dut1.bitCount += 1;
   }
   // Negative DUT1
   else if (
@@ -280,21 +266,24 @@ export function parseSecond(
     currentSecond <= offsets.dut1Neg[1]
   ) {
     if (bits.at(bBitOffset) === 1) {
-      if (currentFrame.dut1 !== undefined) {
+      if (currentFrame.dut1.state !== ValueState.Unset) {
         return Error("multiple dut1 bits set");
       }
 
       const absDut1 = currentSecond - offsets.dut1Neg[1] - 1;
-      currentFrame.dut1 = (absDut1 / 10) as DUT1;
+      currentFrame.dut1.val = (absDut1 / 10) as DUT1;
+      currentFrame.dut1.state = ValueState.Incomplete;
+      currentFrame.dut1.bitCount += 1;
     }
 
-    // End of DUT1, no bits set
-    if (
-      currentSecond === offsets.dut1Neg[1] &&
-      currentFrame.dut1 === undefined &&
-      newFrame.dut1 === undefined
-    ) {
-      newFrame.dut1 = 0;
+    // End of DUT1
+    if (currentSecond === offsets.dut1Neg[1]) {
+      // No bits set
+      if (currentFrame.dut1.state === ValueState.Unset) {
+        currentFrame.dut1.val = 0 as DUT1;
+      }
+
+      currentFrame.dut1.state = ValueState.Valid;
     }
   }
   // Date
@@ -308,12 +297,13 @@ export function parseSecond(
         offsets.year[0],
         offsets.year[1]
       );
-      newFrame.year = (currentFrame?.year ?? 0) + value;
-      newFrame.yearBitCount = (currentFrame.yearBitCount ?? 0) + 1;
+      currentFrame.year.val += value;
+      currentFrame.year.state = ValueState.Incomplete;
+      currentFrame.year.bitCount += 1;
     }
 
     if (currentSecond === offsets.year[1]) {
-      newFrame.yearComplete = true;
+      currentFrame.year.state = ValueState.Complete;
     }
   } else if (
     currentSecond >= offsets.month[0] &&
@@ -325,12 +315,13 @@ export function parseSecond(
         offsets.month[0],
         offsets.month[1]
       );
-      newFrame.month = (currentFrame?.month ?? 0) + value;
-      newFrame.monthBitCount = (currentFrame.monthBitCount ?? 0) + 1;
+      currentFrame.month.val += value;
+      currentFrame.month.state = ValueState.Incomplete;
+      currentFrame.month.bitCount += 1;
     }
 
     if (currentSecond === offsets.month[1]) {
-      newFrame.monthComplete = true;
+      currentFrame.month.state = ValueState.Complete;
     }
   } else if (
     currentSecond >= offsets.dayOfMonth[0] &&
@@ -342,12 +333,13 @@ export function parseSecond(
         offsets.dayOfMonth[0],
         offsets.dayOfMonth[1]
       );
-      newFrame.dayOfMonth = (currentFrame?.dayOfMonth ?? 0) + value;
-      newFrame.dayOfMonthBitCount = (currentFrame.dayOfMonthBitCount ?? 0) + 1;
+      currentFrame.dayOfMonth.val += value;
+      currentFrame.dayOfMonth.state = ValueState.Incomplete;
+      currentFrame.dayOfMonth.bitCount += 1;
     }
 
     if (currentSecond === offsets.dayOfMonth[1]) {
-      newFrame.dayOfMonthComplete = true;
+      currentFrame.dayOfMonth.state = ValueState.Complete;
     }
   } else if (
     currentSecond >= offsets.dayOfWeek[0] &&
@@ -359,12 +351,13 @@ export function parseSecond(
         offsets.dayOfWeek[0],
         offsets.dayOfWeek[1]
       );
-      newFrame.dayOfWeek = (currentFrame?.dayOfWeek ?? 0) + value;
-      newFrame.dayOfWeekBitCount = (currentFrame.dayOfWeekBitCount ?? 0) + 1;
+      currentFrame.dayOfWeek.val += value;
+      currentFrame.dayOfWeek.state = ValueState.Incomplete;
+      currentFrame.dayOfWeek.bitCount += 1;
     }
 
     if (currentSecond === offsets.dayOfWeek[1]) {
-      newFrame.dayOfWeekComplete = true;
+      currentFrame.dayOfWeek.state = ValueState.Complete;
     }
   }
   // Time
@@ -378,12 +371,13 @@ export function parseSecond(
         offsets.hour[0],
         offsets.hour[1]
       );
-      newFrame.hour = (currentFrame?.hour ?? 0) + value;
-      newFrame.hourBitCount = (currentFrame.hourBitCount ?? 0) + 1;
+      currentFrame.hour.val += value;
+      currentFrame.hour.state = ValueState.Incomplete;
+      currentFrame.hour.bitCount += 1;
     }
 
     if (currentSecond === offsets.hour[1]) {
-      newFrame.hourComplete = true;
+      currentFrame.hour.state = ValueState.Complete;
     }
   } else if (
     currentSecond >= offsets.minute[0] &&
@@ -395,45 +389,50 @@ export function parseSecond(
         offsets.minute[0],
         offsets.minute[1]
       );
-      newFrame.minute = (currentFrame?.minute ?? 0) + value;
-      newFrame.minuteBitCount = (currentFrame.minuteBitCount ?? 0) + 1;
+      currentFrame.minute.val += value;
+      currentFrame.minute.state = ValueState.Incomplete;
+      currentFrame.minute.bitCount += 1;
     }
 
     if (currentSecond === offsets.minute[1]) {
-      newFrame.minuteComplete = true;
+      currentFrame.minute.state = ValueState.Complete;
     }
   }
   // Summer time warning
   else if (currentSecond === offsets.summerTimeWarning[0]) {
-    newFrame.summerTimeWarning = bits.at(bBitOffset) === 1;
+    currentFrame.summerTimeWarning.val = bits.at(bBitOffset) === 1;
+    currentFrame.summerTimeWarning.state = ValueState.Valid;
+    currentFrame.summerTimeWarning.bitCount += 1;
   }
   // Parity
   else if (currentSecond === offsets.yearParity[0]) {
-    newFrame.yearParity = bits.at(bBitOffset);
-    newFrame.yearParityValid = validateParity(
-      currentFrame.yearBitCount,
-      newFrame.yearParity
-    );
+    const parityBit = bits.at(bBitOffset);
+    const state = validateParity(currentFrame.year.bitCount, parityBit);
+    currentFrame.year.state = state;
   } else if (currentSecond === offsets.dayParity[0]) {
-    newFrame.dayParity = bits.at(bBitOffset);
+    const parityBit = bits.at(bBitOffset);
     const bitCount =
-      currentFrame.monthBitCount + currentFrame.dayOfMonthBitCount;
-    newFrame.dayParityValid = validateParity(bitCount, newFrame.dayParity);
+      currentFrame.month.bitCount + currentFrame.dayOfMonth.bitCount;
+    const state = validateParity(bitCount, parityBit);
+    currentFrame.month.state = state;
+    currentFrame.dayOfMonth.state = state;
   } else if (currentSecond === offsets.dayOfWeekParity[0]) {
-    newFrame.dayOfWeekParity = bits.at(bBitOffset);
-    newFrame.dayOfWeekParityValid = validateParity(
-      currentFrame.dayOfWeekBitCount,
-      newFrame.dayOfWeekParity
-    );
+    const parityBit = bits.at(bBitOffset);
+    const state = validateParity(currentFrame.dayOfWeek.bitCount, parityBit);
+    currentFrame.dayOfWeek.state = state;
   } else if (currentSecond === offsets.timeParity[0]) {
-    newFrame.timeParity = bits.at(bBitOffset);
-    const bitCount = currentFrame.hourBitCount + currentFrame.minuteBitCount;
-    newFrame.timeParityValid = validateParity(bitCount, newFrame.timeParity);
+    const parityBit = bits.at(bBitOffset);
+    const bitCount = currentFrame.hour.bitCount + currentFrame.minute.bitCount;
+    const state = validateParity(bitCount, parityBit);
+    currentFrame.hour.state = state;
+    currentFrame.minute.state = state;
   }
   // Summer time
   else if (currentSecond === offsets.summerTime[0]) {
-    currentFrame.summerTime = bits.at(bBitOffset) === 1;
+    currentFrame.summerTime.val = bits.at(bBitOffset) === 1;
+    currentFrame.summerTime.state = ValueState.Valid;
+    currentFrame.summerTime.bitCount += 1;
   }
 
-  return newFrame;
+  return null;
 }

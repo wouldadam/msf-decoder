@@ -4,6 +4,7 @@ import {
   DayOfWeek,
   minuteSegment,
   offsets,
+  ValueState,
   type TimeFrame,
 } from "../processing/msf";
 import { MSFProcessor } from "./MSFProcessor";
@@ -97,33 +98,44 @@ function toBCD(value: number, length: number) {
 
   const parity = bitCount % 2 == 0 ? 1 : 0;
 
-  return [bits, parity] as const;
+  return [bits, parity, bitCount] as const;
 }
 
 /// Creates all of the segments for and entire frame
 function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
   const ops = [minuteDesc()];
 
-  let dut1Bit = frame.dut1 * 10;
+  let dut1Bit = frame.dut1.val * 10;
   if (dut1Bit < 0) {
     dut1Bit = Math.abs(dut1Bit) + 8;
   }
 
-  const [yearBits, yearParity] = toBCD(frame.year, 8);
-  const [monthBits, monthParity] = toBCD(frame.month, 5);
-  const [dayOfMonthBits, dayOfMonthParity] = toBCD(frame.dayOfMonth, 6);
-  const [dayOfWeekBits, dayOfWeekParity] = toBCD(frame.dayOfWeek, 3);
-  const [hourBits, hourParity] = toBCD(frame.hour, 6);
-  const [minuteBits, minuteParity] = toBCD(frame.minute, 7);
+  const [yearBits, yearParity, yearBitCount] = toBCD(frame.year.val, 8);
+  const [monthBits, monthParity, monthBitCount] = toBCD(frame.month.val, 5);
+  const [dayOfMonthBits, dayOfMonthParity, dayOfMonthBitCount] = toBCD(
+    frame.dayOfMonth.val,
+    6
+  );
+  const [dayOfWeekBits, dayOfWeekParity, dayOfWeekBitCount] = toBCD(
+    frame.dayOfWeek.val,
+    3
+  );
+  const [hourBits, hourParity, hourBitCount] = toBCD(frame.hour.val, 6);
+  const [minuteBits, minuteParity, minuteBitCount] = toBCD(frame.minute.val, 7);
 
   // Day and time parity are multiple fields combined
   const dayParity = monthParity + dayOfMonthParity === 1 ? 0 : 1;
   const timeParity = hourParity + minuteParity === 1 ? 0 : 1;
 
-  frame.yearParity = yearParity;
-  frame.dayParity = dayParity;
-  frame.dayOfWeekParity = dayOfWeekParity;
-  frame.timeParity = timeParity;
+  frame.dut1.bitCount = 1;
+  frame.year.bitCount = yearBitCount;
+  frame.month.bitCount = monthBitCount;
+  frame.dayOfMonth.bitCount = dayOfMonthBitCount;
+  frame.dayOfWeek.bitCount = dayOfWeekBitCount;
+  frame.hour.bitCount = hourBitCount;
+  frame.minute.bitCount = minuteBitCount;
+  frame.summerTimeWarning.bitCount = 1;
+  frame.summerTime.bitCount = 1;
 
   for (let second = 1; second < 60; ++second) {
     if (dut1Bit != 0 && second === dut1Bit) {
@@ -153,7 +165,7 @@ function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
     }
     // Marker
     else if (second === offsets.summerTimeWarning[0]) {
-      ops.push(secondDesc(1, frame.summerTimeWarning ? 1 : 0));
+      ops.push(secondDesc(1, frame.summerTimeWarning.val ? 1 : 0));
     } else if (second === offsets.yearParity[0]) {
       ops.push(secondDesc(1, yearParity));
     } else if (second === offsets.dayParity[0]) {
@@ -163,7 +175,7 @@ function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
     } else if (second === offsets.timeParity[0]) {
       ops.push(secondDesc(1, timeParity));
     } else if (second === offsets.summerTime[0]) {
-      ops.push(secondDesc(1, frame.summerTime ? 1 : 0));
+      ops.push(secondDesc(1, frame.summerTime.val ? 1 : 0));
     } else {
       ops.push(secondDesc(0, 0));
     }
@@ -187,15 +199,19 @@ test.each([0, 0.25, 0.5, 0.75, 1, 60])(
 
     // Create each of the message segments to send
     const frame: TimeFrame = {
-      dut1: 0.1,
-      year: 33,
-      month: 10,
-      dayOfMonth: 11,
-      dayOfWeek: DayOfWeek.Monday,
-      hour: 20,
-      minute: 44,
-      summerTimeWarning: false,
-      summerTime: true,
+      dut1: { val: 0.1, bitCount: 0, state: ValueState.Valid },
+      year: { val: 33, bitCount: 0, state: ValueState.Valid },
+      month: { val: 10, bitCount: 0, state: ValueState.Valid },
+      dayOfMonth: { val: 11, bitCount: 0, state: ValueState.Valid },
+      dayOfWeek: {
+        val: DayOfWeek.Monday,
+        bitCount: 0,
+        state: ValueState.Valid,
+      },
+      hour: { val: 20, bitCount: 0, state: ValueState.Valid },
+      minute: { val: 44, bitCount: 0, state: ValueState.Valid },
+      summerTimeWarning: { val: false, bitCount: 0, state: ValueState.Valid },
+      summerTime: { val: true, bitCount: 0, state: ValueState.Valid },
     };
 
     const segments: Array<InputDesc> = createFrameSegments(frame);
@@ -233,19 +249,7 @@ test.each([0, 0.25, 0.5, 0.75, 1, 60])(
     }
 
     // Last second should contain full frame with all fields complete and parity checks valid
-    const expectedFrame: TimeFrame = {
-      ...frame,
-      yearComplete: true,
-      monthComplete: true,
-      dayOfMonthComplete: true,
-      dayOfWeekComplete: true,
-      hourComplete: true,
-      minuteComplete: true,
-      yearParityValid: true,
-      dayParityValid: true,
-      dayOfWeekParityValid: true,
-      timeParityValid: true,
-    };
+    const expectedFrame: TimeFrame = { ...frame };
     expect(processor.port.postMessage).toHaveBeenNthCalledWith(
       60,
       expect.objectContaining({

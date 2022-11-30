@@ -1,3 +1,4 @@
+import { CreateTimeFrame } from "../processing/msf";
 import Frames from "./Frames.svelte";
 
 export default {
@@ -6,5 +7,5 @@ export default {
 };
 
 export const Default = {
-  args: { frame: {} },
+  args: { frame: CreateTimeFrame() },
 };

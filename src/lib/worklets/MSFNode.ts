@@ -1,5 +1,10 @@
 import type { Writable } from "svelte/store";
-import type { TimeFrame } from "../processing/msf";
+import {
+  CreateTimeFrame,
+  ValueState,
+  type FrameValue,
+  type TimeFrame,
+} from "../processing/msf";
 import type { TimeStore } from "../time";
 
 const msfProcessorName = "msf-processor";
@@ -66,7 +71,7 @@ export class MSFNode extends AudioWorkletNode {
       this.store.update((store) => {
         return {
           previousFrame: store.currentFrame,
-          currentFrame: {},
+          currentFrame: CreateTimeFrame(),
           second: 0,
         };
       });
@@ -83,7 +88,7 @@ export class MSFNode extends AudioWorkletNode {
       this.store.update((store) => {
         return {
           previousFrame: store.currentFrame,
-          currentFrame: {},
+          currentFrame: CreateTimeFrame(),
           second: null,
         };
       });
