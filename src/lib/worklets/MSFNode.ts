@@ -70,6 +70,7 @@ export class MSFNode extends AudioWorkletNode {
     if (ev.data.msg === "minute") {
       this.store.update((store) => {
         return {
+          currentTime: this.merge(store.currentTime, store.currentFrame),
           previousFrame: store.currentFrame,
           currentFrame: CreateTimeFrame(),
           second: 0,
@@ -79,6 +80,7 @@ export class MSFNode extends AudioWorkletNode {
       const mark: SecondMark = ev.data;
       this.store.update((store) => {
         return {
+          currentTime: store.currentTime,
           previousFrame: store.previousFrame,
           currentFrame: mark.frame,
           second: mark.second,
@@ -87,6 +89,7 @@ export class MSFNode extends AudioWorkletNode {
     } else if (ev.data.msg === "invalid") {
       this.store.update((store) => {
         return {
+          currentTime: store.currentTime,
           previousFrame: store.currentFrame,
           currentFrame: CreateTimeFrame(),
           second: null,
@@ -94,4 +97,20 @@ export class MSFNode extends AudioWorkletNode {
       });
     }
   };
+
+  private merge(currentTime: TimeFrame, newFrame: TimeFrame): TimeFrame {
+    const newTime = {
+      ...currentTime,
+    };
+
+    for (const key of Object.keys(newFrame)) {
+      console.log(key);
+      const val = newFrame[key] as FrameValue<any>;
+      if (val.state === ValueState.Valid) {
+        newTime[key] = val;
+      }
+    }
+
+    return newTime;
+  }
 }

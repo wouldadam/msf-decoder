@@ -14,6 +14,7 @@
   import Placeholder from "./lib/ui/Placeholder.svelte";
   import Scan from "./lib/ui/Scan.svelte";
   import Scope from "./lib/ui/Scope.svelte";
+  import Time from "./lib/ui/Time.svelte";
   import Waterfall from "./lib/ui/Waterfall.svelte";
 
   const processor = new Processor(
@@ -54,11 +55,11 @@
       </div>
 
       <div>
-        <Frames />
+        <Time />
       </div>
 
       <div>
-        <Placeholder title="Time" />
+        <Frames />
       </div>
 
       <div>

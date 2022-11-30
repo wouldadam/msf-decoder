@@ -2,6 +2,9 @@ import { writable, type Writable } from "svelte/store";
 import { CreateTimeFrame, type TimeFrame } from "./processing/msf";
 
 export interface TimeStore {
+  /// The current time based on all decoded frames
+  currentTime: TimeFrame;
+
   /// The frame currently being processed
   currentFrame: TimeFrame;
 
