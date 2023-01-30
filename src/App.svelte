@@ -35,35 +35,37 @@
 </script>
 
 <main class="h-full p-4">
-  <div class="flex flex-col lg:flex-row w-full h-full gap-4">
-    <div class="flex flex-col grow shrink basis-2/3 gap-y-4">
-      <div>
+  <div
+    class="w-full h-full min-h-full flex flex-col lg:h-auto lg:flex-row gap-4"
+  >
+    <div class="flex flex-col gap-y-4 basis-2/3">
+      <div class="min-h-[10em] basis-1/6">
         <Scan />
       </div>
 
-      <div class="h-full">
+      <div class="min-h-[10em] grow">
         <Waterfall />
       </div>
 
-      <div>
+      <div class="min-h-[10em] basis-1/6">
         <Scope />
       </div>
     </div>
 
-    <div class="flex flex-col grow shrink basis-1/3 gap-y-4">
-      <div>
+    <div class="flex flex-col gap-y-4 basis-1/3">
+      <div class="shrink">
         <Config />
       </div>
 
-      <div>
+      <div class="shrink">
         <Time />
       </div>
 
-      <div>
+      <div class="shrink">
         <Frames />
       </div>
 
-      <div class="h-full">
+      <div class="min-h-[10em] grow">
         <Events />
       </div>
     </div>
