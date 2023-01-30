@@ -89,7 +89,7 @@
 
   Axes change dynamically based on the previous buffer.
 -->
-<div class="card card-compact w-full h-40 bg-base-200 shadow-xl">
+<div class="card card-compact w-full h-full bg-base-200 shadow-xl">
   <div class="card-body flex">
     <Chart {xAxis} yAxis={{ label: "Amp" }} {drawLine} />
   </div>

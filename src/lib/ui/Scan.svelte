@@ -105,7 +105,7 @@
 
   Allows the fps to be specified.
 -->
-<div class="card card-compact w-full h-56 bg-base-200 shadow-xl">
+<div class="card card-compact w-full h-full bg-base-200 shadow-xl">
   <div class="card-body flex">
     <Chart
       {drawLine}
