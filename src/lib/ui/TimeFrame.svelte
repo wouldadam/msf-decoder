@@ -10,17 +10,6 @@
   export let frame: TimeFrame;
   export let second: number | null = null;
 
-  $: dayOfWeek = {
-    ...frame.dayOfWeek,
-    val:
-      frame.dayOfWeek !== undefined
-        ? Object.values(DayOfWeek)[frame.dayOfWeek.val]
-        : undefined,
-  };
-
-  $: summerTimeWarning = boolToChar(frame.summerTimeWarning);
-  $: summerTime = boolToChar(frame.summerTime);
-
   const boolToChar = (value: FrameValueObj<boolean>) => {
     if (value === undefined) {
       return undefined;
@@ -31,13 +20,39 @@
       val: value.val ? "✓" : "✗",
     };
   };
+
+  $: dayOfWeek = {
+    ...frame.dayOfWeek,
+    val:
+      frame.dayOfWeek !== undefined
+        ? Object.values(DayOfWeek)[frame.dayOfWeek.val]
+        : undefined,
+  };
+
+  $: flags = [
+    {
+      title: "DUT1",
+      value: frame.dut1,
+      desc: "UT1 - UTC.",
+    },
+    {
+      title: "BST warn",
+      value: boolToChar(frame.summerTimeWarning),
+      desc: "BST change imminent.",
+    },
+    {
+      title: "BST",
+      value: boolToChar(frame.summerTime),
+      desc: "BST in effect.",
+    },
+  ];
 </script>
 
-<div class="flex flex-col gap-4">
+<div class="@container w-full h-full flex flex-col gap-2">
   <div
-    class="flex flex-col sm:flex-row w-full bg-base-100 rounded-xl px-6 text-4xl font-extrabold "
+    class="bg-base-100 w-full rounded-xl flex flex-col @xl:flex-row px-4 text-4xl font-extrabold"
   >
-    <div class="flex flex-row flex-wrap flex-grow sm:w-4/6 py-4 justify-center">
+    <div class="flex flex-row flex-wrap @xl:w-4/6 pt-2 @xl:pt-2 justify-center">
       <div>
         <FrameValue value={frame.year} />
       </div>
@@ -61,9 +76,9 @@
       </div>
     </div>
 
-    <div class="divider divider-vertical sm:divider-horizontal my-0" />
+    <div class="divider divider-vertical @xl:divider-horizontal py-0 my-0" />
 
-    <div class="flex flex-row sm:w-2/6 py-4 justify-center">
+    <div class="flex flex-row @xl:w-2/6 pb-2 @xl:p-2 justify-center">
       <FrameValue value={frame.hour} />
       <span>:</span>
       <FrameValue value={frame.minute} />
@@ -76,39 +91,23 @@
     </div>
   </div>
 
-  <div class="flex flex-col sm:flex-row w-full bg-base-100 rounded-xl px-6">
-    <div
-      class="flex flex-col flex-shrink py-2 sm:py-4 sm:w-2/6 items-center gap-2"
-    >
-      <div class="stat-title">DUT1</div>
-      <div class="stat-value">
-        <FrameValue value={frame.dut1} padWidth={1} />
+  <div class="bg-base-100 rounded-xl w-full flex flex-row px-4">
+    {#each flags as flag, idx}
+      <div
+        class="tooltip tooltip-bottom basis-1/3 flex flex-row py-1 gap-4 justify-around"
+        data-tip={flag.desc}
+      >
+        <span class="flex whitespace-nowrap items-center opacity-60"
+          >{flag.title}</span
+        >
+        <div class="flex items-center text-2xl font-extrabold">
+          <FrameValue value={flag.value} padWidth={1} />
+        </div>
       </div>
-      <div class="stat-desc">Difference between UTC and UT1.</div>
-    </div>
 
-    <div class="divider divider-vertical sm:divider-horizontal my-0" />
-
-    <div
-      class="flex flex-col flex-shrink py-2 sm:py-4 sm:w-2/6 items-center gap-2"
-    >
-      <div class="stat-title">Summer time warning</div>
-      <div class="stat-value">
-        <FrameValue value={summerTimeWarning} padWidth={1} />
-      </div>
-      <div class="stat-desc">Summer time change in the next hour.</div>
-    </div>
-
-    <div class="divider divider-vertical sm:divider-horizontal my-0" />
-
-    <div
-      class="flex flex-col flex-shrink py-2 sm:py-4 w-full sm:w-2/6 items-center gap-2"
-    >
-      <div class="stat-title">Summer time</div>
-      <div class="stat-value">
-        <FrameValue value={summerTime} padWidth={1} />
-      </div>
-      <div class="stat-desc">Summer time in effect.</div>
-    </div>
+      {#if idx != flags.length - 1}
+        <div class="divider divider-horizontal " />
+      {/if}
+    {/each}
   </div>
 </div>
