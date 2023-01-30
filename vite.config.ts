@@ -1,7 +1,7 @@
 /// <reference types="vite" />
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { defineConfig, UserConfig as ViteConfig } from "vite";
 import { UserConfig as VitestConfig } from "vitest/config";
-import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 const vitestConfig: VitestConfig = {
   test: {
@@ -10,6 +10,19 @@ const vitestConfig: VitestConfig = {
     setupFiles: ["./src/setupTests.ts"],
     deps: {
       inline: ["vitest-canvas-mock"],
+    },
+    coverage: {
+      all: true,
+      excludeNodeModules: true,
+      exclude: [
+        "storybook-static/**",
+        "src/test/**",
+        "dist/**",
+        ".storybook/**",
+        "*.config.{cjs,js,ts}",
+        "**/*.d.ts",
+        "**/*.stories.ts",
+      ],
     },
   },
 };
