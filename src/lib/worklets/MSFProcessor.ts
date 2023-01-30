@@ -172,7 +172,8 @@ export class MSFProcessor extends AudioWorkletProcessor {
         } else {
           // We found invalid data inside a frame
           this.invalidSegment(
-            `segment contains invalid data: ${first10(this.symbolRing)}`
+            "Segment has invalid data.",
+            first10(this.symbolRing)
           );
         }
       } else if (isMinuteSegment(this.symbolRing)) {
@@ -180,16 +181,20 @@ export class MSFProcessor extends AudioWorkletProcessor {
         this.startFrame();
 
         // Notify the Node
-        const mark: MinuteMark = { msg: "minute", audioTime: currentTime };
+        const mark: MinuteMark = {
+          msg: "minute",
+          audioTime: currentTime,
+          utcTime: new Date().getTime(),
+        };
         this.port.postMessage(mark);
 
         // Remove the segment from the buffer
         this.symbolRing.skip(symbolsPerSegment);
       } else {
         if (isSecondSegment(this.symbolRing)) {
-          console.warn(
-            `Found a second outside of a frame. ${first10(this.symbolRing)}`,
-            currentTime
+          this.invalidSegment(
+            "Segment outside a frame.",
+            first10(this.symbolRing)
           );
         }
 
@@ -212,14 +217,16 @@ export class MSFProcessor extends AudioWorkletProcessor {
   }
 
   /// Handle an invalid frame, ends frame processing
-  private invalidSegment(reason: string) {
+  private invalidSegment(reason: string, bits: string) {
     // Notify the node
     const mark: InvalidMark = {
       msg: "invalid",
       audioTime: currentTime,
+      utcTime: new Date().getTime(),
       reason,
+      bits,
       second: this.currentSecond + 1,
-      frame: CreateTimeFrame(),
+      frame: JSON.parse(JSON.stringify(this.currentFrame)),
     };
     this.port.postMessage(mark);
 
@@ -230,7 +237,7 @@ export class MSFProcessor extends AudioWorkletProcessor {
   // Parses the start of the symbol ring as if it is a second
   private parseSecond() {
     if (!validateFixedBits(this.symbolRing, this.currentSecond)) {
-      this.invalidSegment("invalid fixed bits");
+      this.invalidSegment("Invalid fixed bits.", first10(this.symbolRing));
       return;
     }
 
@@ -242,15 +249,16 @@ export class MSFProcessor extends AudioWorkletProcessor {
     );
 
     if (result instanceof Error) {
-      this.invalidSegment(result.message);
+      this.invalidSegment(result.message, first10(this.symbolRing));
     }
 
     // Notify the node
     const mark: SecondMark = {
       msg: "second",
       audioTime: currentTime,
+      utcTime: new Date().getTime(),
       second: this.currentSecond,
-      frame: this.currentFrame,
+      frame: JSON.parse(JSON.stringify(this.currentFrame)),
     };
     this.port.postMessage(mark);
 

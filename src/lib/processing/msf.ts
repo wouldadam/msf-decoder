@@ -253,7 +253,7 @@ export function parseSecond(
     bits.at(bBitOffset) === 1
   ) {
     if (currentFrame.dut1.state !== ValueState.Unset) {
-      return Error("multiple dut1 bits set");
+      return Error("Multiple dut1 bits set.");
     }
 
     currentFrame.dut1.val = (currentSecond / 10) as DUT1;
@@ -267,7 +267,7 @@ export function parseSecond(
   ) {
     if (bits.at(bBitOffset) === 1) {
       if (currentFrame.dut1.state !== ValueState.Unset) {
-        return Error("multiple dut1 bits set");
+        return Error("Multiple dut1 bits set.");
       }
 
       const absDut1 = currentSecond - offsets.dut1Neg[1] - 1;

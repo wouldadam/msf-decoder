@@ -8,10 +8,10 @@
     playback,
   } from "./lib/config";
   import { defaultProcessorKey, Processor } from "./lib/processing/Processor";
-  import { timeStore } from "./lib/time";
+  import { eventStore, timeStore } from "./lib/time";
   import Config from "./lib/ui/Config.svelte";
+  import Events from "./lib/ui/Events.svelte";
   import Frames from "./lib/ui/Frames.svelte";
-  import Placeholder from "./lib/ui/Placeholder.svelte";
   import Scan from "./lib/ui/Scan.svelte";
   import Scope from "./lib/ui/Scope.svelte";
   import Time from "./lib/ui/Time.svelte";
@@ -23,7 +23,8 @@
     playback,
     audio,
     displayMode,
-    timeStore
+    timeStore,
+    eventStore
   );
 
   setContext(defaultProcessorKey, processor);
@@ -62,8 +63,8 @@
         <Frames />
       </div>
 
-      <div>
-        <Placeholder title="Events" />
+      <div class="h-full">
+        <Events />
       </div>
     </div>
   </div>

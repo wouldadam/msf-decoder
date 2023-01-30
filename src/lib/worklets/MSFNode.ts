@@ -5,7 +5,7 @@ import {
   type FrameValue,
   type TimeFrame,
 } from "../processing/msf";
-import type { TimeStore } from "../time";
+import { maxEvents, type EventStore, type TimeStore } from "../time";
 
 const msfProcessorName = "msf-processor";
 
@@ -13,16 +13,26 @@ export interface MSFOptions {
   symbolRate: number;
 }
 
+/// A minute marker has been found
 export interface MinuteMark {
   msg: "minute";
 
+  /// The time at the audio source
   audioTime: number;
+
+  /// The utc time
+  utcTime: number;
 }
 
+/// A valid second has been found
 export interface SecondMark {
   msg: "second";
 
+  /// The time at the audio source
   audioTime: number;
+
+  /// The utc time
+  utcTime: number;
 
   /// 0 to 59
   second: number;
@@ -31,12 +41,21 @@ export interface SecondMark {
   frame: TimeFrame;
 }
 
+/// An invalid segment has been found
 export interface InvalidMark {
   msg: "invalid";
 
+  /// The time at the audio source
   audioTime: number;
 
+  /// The utc time
+  utcTime: number;
+
+  /// Why the segment is invalid
   reason: string;
+
+  /// The invalid bits
+  bits: string;
 
   /// 0 to 59
   second: number;
@@ -51,7 +70,8 @@ export class MSFNode extends AudioWorkletNode {
   constructor(
     context: BaseAudioContext,
     options: MSFOptions,
-    private store: Writable<TimeStore>
+    private timeStore: Writable<TimeStore>,
+    private eventStore: Writable<EventStore>
   ) {
     super(context, msfProcessorName, {
       numberOfInputs: 1,
@@ -68,7 +88,7 @@ export class MSFNode extends AudioWorkletNode {
 
   private onMessage = (ev: MessageEvent<MSFMsg>) => {
     if (ev.data.msg === "minute") {
-      this.store.update((store) => {
+      this.timeStore.update((store) => {
         return {
           currentTime: this.merge(store.currentTime, store.currentFrame),
           previousFrame: store.currentFrame,
@@ -78,7 +98,7 @@ export class MSFNode extends AudioWorkletNode {
       });
     } else if (ev.data.msg === "second") {
       const mark: SecondMark = ev.data;
-      this.store.update((store) => {
+      this.timeStore.update((store) => {
         return {
           currentTime: store.currentTime,
           previousFrame: store.previousFrame,
@@ -87,7 +107,8 @@ export class MSFNode extends AudioWorkletNode {
         };
       });
     } else if (ev.data.msg === "invalid") {
-      this.store.update((store) => {
+      const mark: InvalidMark = ev.data;
+      this.timeStore.update((store) => {
         return {
           currentTime: store.currentTime,
           previousFrame: store.currentFrame,
@@ -96,6 +117,8 @@ export class MSFNode extends AudioWorkletNode {
         };
       });
     }
+
+    this.addEvent(ev.data);
   };
 
   private merge(currentTime: TimeFrame, newFrame: TimeFrame): TimeFrame {
@@ -104,7 +127,6 @@ export class MSFNode extends AudioWorkletNode {
     };
 
     for (const key of Object.keys(newFrame)) {
-      console.log(key);
       const val = newFrame[key] as FrameValue<any>;
       if (val.state === ValueState.Valid) {
         newTime[key] = val;
@@ -112,5 +134,16 @@ export class MSFNode extends AudioWorkletNode {
     }
 
     return newTime;
+  }
+
+  private addEvent(event: MSFMsg) {
+    this.eventStore.update((store) => {
+      const events = [event, ...store.events];
+      events.length = Math.min(events.length, maxEvents);
+
+      return {
+        events,
+      };
+    });
   }
 }

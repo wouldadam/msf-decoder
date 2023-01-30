@@ -9,7 +9,7 @@ import { ComparatorNode } from "../worklets/ComparatorNode";
 import { MSFNode } from "../worklets/MSFNode";
 import { RMSNode } from "../worklets/RMSNode";
 
-import type { TimeStore } from "../time";
+import type { EventStore, TimeStore } from "../time";
 import comparatorProcessorUrl from "../worklets/ComparatorProcessor.ts?url";
 import msfProcessorUrl from "../worklets/MSFProcessor.ts?url";
 import rmsProcessorUrl from "../worklets/RMSProcessor.ts?url";
@@ -43,7 +43,8 @@ export class Processor {
     private playbackStore: Readable<PlaybackState>,
     private audioStore: Readable<OnOffState>,
     private displayModeStore: Readable<DisplayMode>,
-    private timeStore: Writable<TimeStore>
+    private timeStore: Writable<TimeStore>,
+    private eventStore: Writable<EventStore>
   ) {
     this.unsubAudioSource = audioSourceStore.subscribe(
       this.onAudioSourceChange
@@ -163,7 +164,8 @@ export class Processor {
       {
         symbolRate: 10,
       },
-      this.timeStore
+      this.timeStore,
+      this.eventStore
     );
     this.comparator.connect(this.msf);
 
