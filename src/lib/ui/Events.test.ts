@@ -35,6 +35,13 @@ test("should render all event types", () => {
         reason: "Test error.",
         frame: CreateTimeFrame(),
       },
+      {
+        msg: "sync",
+        audioTime: 4,
+        utcTime: 4,
+        maxCount: 4,
+        skipSamples: 4,
+      },
     ],
   });
 
@@ -45,6 +52,8 @@ test("should render all event types", () => {
   expect(result.container).toHaveTextContent(
     "[3] Invalid segment (3): Test error."
   );
+
+  expect(result.container).toHaveTextContent("[4] Synced by 4 samples.");
 });
 
 test("shows event detail in modal", async () => {
@@ -67,13 +76,20 @@ test("shows event detail in modal", async () => {
         reason: "Test error.",
         frame: CreateTimeFrame(),
       },
+      {
+        msg: "sync",
+        audioTime: 4,
+        utcTime: 4,
+        maxCount: 4,
+        skipSamples: 4,
+      },
     ],
   });
 
   const user = userEvent.setup();
   const result = render(Events);
 
-  for (let buttonTxt of ["[1]", "[2]", "[3]"]) {
+  for (let buttonTxt of ["[1]", "[2]", "[3]", "[4]"]) {
     const button = await result.findByText(buttonTxt);
     const modal = await result.findByRole("dialog");
     const close = await result.findByText("Close");

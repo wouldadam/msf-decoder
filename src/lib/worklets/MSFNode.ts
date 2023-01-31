@@ -64,7 +64,23 @@ export interface InvalidMark {
   frame: TimeFrame;
 }
 
-export type MSFMsg = MinuteMark | SecondMark | InvalidMark;
+export interface SyncMark {
+  msg: "sync";
+
+  /// The time at the audio source
+  audioTime: number;
+
+  /// The utc time
+  utcTime: number;
+
+  /// The number of samples skipped
+  skipSamples: number;
+
+  /// The max count of the same skipped to
+  maxCount: number;
+}
+
+export type MSFMsg = MinuteMark | SecondMark | InvalidMark | SyncMark;
 
 export class MSFNode extends AudioWorkletNode {
   constructor(

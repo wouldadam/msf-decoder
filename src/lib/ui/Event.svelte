@@ -63,6 +63,18 @@
         }
       );
     }
+
+    if (event?.msg === "sync") {
+      fields.push(
+        { type: "section", name: "Sync" },
+        {
+          type: "field",
+          name: "Samples",
+          value: event?.skipSamples.toFixed(0),
+        },
+        { type: "field", name: "Max", value: event?.maxCount.toFixed(0) }
+      );
+    }
   }
 </script>
 

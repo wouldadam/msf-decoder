@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { expect, test, type Mock } from "vitest";
 import {
   bcdBits,
   DayOfWeek,
@@ -227,31 +227,38 @@ test.each([0, 0.25, 0.5, 0.75, 1, 60])(
     feedProcessor(processor, input);
 
     // Check we got the expected decode messages
-    expect(processor.port.postMessage).toBeCalledTimes(60);
+    const mockPost = processor.port.postMessage as Mock;
+    const callCount = mockPost.mock.calls.length;
+    expect(callCount).toBeGreaterThanOrEqual(60);
 
-    // Should start with a minute
-    expect(processor.port.postMessage).toHaveBeenNthCalledWith(
-      1,
+    // Should have a minute marker
+    expect(processor.port.postMessage).toHaveBeenCalledWith(
       expect.objectContaining({
         msg: "minute",
       })
     );
 
-    // Should have 59 second markers
-    for (let call = 2; call <= 60; ++call) {
-      expect(processor.port.postMessage).toHaveBeenNthCalledWith(
-        call,
-        expect.objectContaining({
-          msg: "second",
-          second: call - 1,
-        })
-      );
+    // Should have 59 second markers in order
+    let secondCount = 0;
+    for (let call = 0; call < callCount; ++call) {
+      if (mockPost.mock.calls[call][0].msg == "second") {
+        expect(processor.port.postMessage).toHaveBeenNthCalledWith(
+          call + 1,
+          expect.objectContaining({
+            msg: "second",
+            second: secondCount + 1,
+          })
+        );
+
+        secondCount += 1;
+      }
     }
+    expect(secondCount).toBe(59);
 
     // Last second should contain full frame with all fields complete and parity checks valid
     const expectedFrame: TimeFrame = { ...frame };
     expect(processor.port.postMessage).toHaveBeenNthCalledWith(
-      60,
+      callCount,
       expect.objectContaining({
         msg: "second",
         second: 59,

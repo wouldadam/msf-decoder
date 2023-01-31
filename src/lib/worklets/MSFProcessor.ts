@@ -13,6 +13,7 @@ import type {
   MinuteMark,
   MSFOptions,
   SecondMark,
+  SyncMark,
 } from "./MSFNode";
 
 const msfProcessorName = "msf-processor";
@@ -124,6 +125,15 @@ export class MSFProcessor extends AudioWorkletProcessor {
       if (syncMaxIdx > 0 && syncMax > 0) {
         this.inputRing.skip(syncMaxIdx);
         this.syncBuffer.fill(0);
+
+        let mark: SyncMark = {
+          msg: "sync",
+          audioTime: currentTime,
+          utcTime: new Date().getTime(),
+          skipSamples: syncMaxIdx,
+          maxCount: syncMax,
+        };
+        this.port.postMessage(mark);
 
         // We might have fewer segments after skipping some samples
         fullSegmentSamplesCount =

@@ -13,6 +13,8 @@
       return `Valid second (${event.second}).`;
     } else if (event.msg == "invalid") {
       return `Invalid segment (${event.second}): ${event.reason}`;
+    } else if (event.msg === "sync") {
+      return `Synced by ${event.skipSamples} samples.`;
     }
   }
 </script>
