@@ -15,6 +15,7 @@
     carrierFrequencyHz,
     displayMode,
     playback,
+    type DisplayMode,
     type OnOffState,
   } from "../config";
   import { defaultProcessorKey, Processor } from "../processing/Processor";
@@ -43,6 +44,13 @@
     const allDevices = await navigator.mediaDevices.enumerateDevices();
     devices = allDevices.filter((d) => d.kind === "audioinput");
   });
+
+  const views: Array<{ mode: DisplayMode; tip: string; icon?: any }> = [
+    { mode: "raw", tip: "Raw view", icon: MdInput },
+    { mode: "filter", tip: "Filter view", icon: MdGraphicEq },
+    { mode: "rms", tip: "RMS view", icon: MdShowChart },
+    { mode: "comparator", tip: "Comparator view", icon: GiComputing },
+  ];
 
   function togglePlayback() {
     if ($playback === "play") {
@@ -122,8 +130,9 @@
       />
 
       <button
-        class="btn btn-sm p-2 pl-3 pr-3"
+        class="btn btn-sm p-2 pl-3 pr-3 tooltip tooltip-bottom normal-case"
         on:click={() => toggleOnOffState(audio)}
+        data-tip={$audio === "on" ? "Mute" : "Unmute"}
       >
         {#if $audio === "on"}
           <MdVolumeUp />
@@ -140,9 +149,10 @@
       />
 
       <button
-        class="grow btn btn-sm btn-success"
+        class="grow btn btn-sm btn-success tooltip tooltip-bottom normal-case"
         class:btn-error={$playback === "play"}
         on:click={togglePlayback}
+        data-tip={$playback === "play" ? "Pause" : "Play"}
       >
         {#if $playback === "play"}
           <MPause />
@@ -166,37 +176,16 @@
 
     <div class="flex flex-row grow gap-2 mt-2">
       <div class="btn-group btn-horizontal">
-        <button
-          class="btn btn-sm p-2 pl-3 pr-3"
-          class:btn-info={$displayMode === "raw"}
-          on:click={() => ($displayMode = "raw")}
-        >
-          <MdInput />
-        </button>
-
-        <button
-          class="btn btn-sm p-2 pl-3 pr-3"
-          class:btn-info={$displayMode === "filter"}
-          on:click={() => ($displayMode = "filter")}
-        >
-          <MdGraphicEq />
-        </button>
-
-        <button
-          class="btn btn-sm p-2 pl-3 pr-3"
-          class:btn-info={$displayMode === "rms"}
-          on:click={() => ($displayMode = "rms")}
-        >
-          <MdShowChart />
-        </button>
-
-        <button
-          class="btn btn-sm p-2 pl-3 pr-3"
-          class:btn-info={$displayMode === "comparator"}
-          on:click={() => ($displayMode = "comparator")}
-        >
-          <GiComputing />
-        </button>
+        {#each views as view}
+          <button
+            class="btn btn-sm p-2 pl-3 pr-3 tooltip tooltip-bottom normal-case"
+            class:btn-info={$displayMode === view.mode}
+            on:click={() => ($displayMode = view.mode)}
+            data-tip={view.tip}
+          >
+            <svelte:component this={view.icon} />
+          </button>
+        {/each}
       </div>
     </div>
   </div>
