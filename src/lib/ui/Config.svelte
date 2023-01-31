@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { getContext, onDestroy, onMount } from "svelte";
   import GiComputing from "svelte-icons/gi/GiComputing.svelte";
   import MdGraphicEq from "svelte-icons/md/MdGraphicEq.svelte";
   import MdInput from "svelte-icons/md/MdInput.svelte";
+  import MPause from "svelte-icons/md/MdPause.svelte";
   import MdPlayArrow from "svelte-icons/md/MdPlayArrow.svelte";
   import MdShowChart from "svelte-icons/md/MdShowChart.svelte";
-  import MdStop from "svelte-icons/md/MdStop.svelte";
   import MdVolumeOff from "svelte-icons/md/MdVolumeOff.svelte";
   import MdVolumeUp from "svelte-icons/md/MdVolumeUp.svelte";
   import { get, type Writable } from "svelte/store";
@@ -17,6 +17,7 @@
     playback,
     type OnOffState,
   } from "../config";
+  import { defaultProcessorKey, Processor } from "../processing/Processor";
 
   let devices: MediaDeviceInfo[] | null = null;
   let audioFileInput: HTMLInputElement | null = null;
@@ -25,6 +26,14 @@
       audioFileInput.value = "";
     }
   }
+
+  const processor = getContext<Processor>(defaultProcessorKey);
+  let audioTime = 0;
+  const interval = setInterval(
+    () => (audioTime = processor?.context?.currentTime || 0),
+    500
+  );
+  onDestroy(() => clearInterval(interval));
 
   onMount(async () => {
     // We have to call this first otherwise we don't get given permissions
@@ -56,6 +65,18 @@
       $audioSource = audioFileInput.files[0];
     }
   }
+
+  function formatTime(seconds: number): string {
+    let hours = Math.floor(seconds / 3600);
+    seconds -= hours * 3600;
+
+    let minutes = Math.floor(seconds / 60);
+    seconds -= minutes * 60;
+
+    return `${hours.toFixed(0).padStart(2, "0")}:${minutes
+      .toFixed(0)
+      .padStart(2, "0")}:${seconds.toFixed(0).padStart(2, "0")}`;
+  }
 </script>
 
 <!--
@@ -64,11 +85,11 @@
 
   The config is stored in the svelte stores in config.ts.
 -->
-<div class="card w-full h-full bg-base-200 shadow-xl">
+<div class="card card-compact w-full h-full bg-base-200 shadow-xl">
   <div class="card-body">
     <h2 class="card-title">Config</h2>
 
-    <label class="label-text" for="source">Source</label>
+    <label class="label-text" for="sousrce">Playback</label>
     <div class="flex flex-row gap-2" id="source">
       {#if devices == null}
         <p>No audio devices available.</p>
@@ -99,6 +120,36 @@
         bind:this={audioFileInput}
         on:change={onAudioFile}
       />
+
+      <button
+        class="btn btn-sm p-2 pl-3 pr-3"
+        on:click={() => toggleOnOffState(audio)}
+      >
+        {#if $audio === "on"}
+          <MdVolumeUp />
+        {:else}
+          <MdVolumeOff />
+        {/if}
+      </button>
+    </div>
+
+    <div class="flex flex-row grow gap-4 mt-2">
+      <input
+        value={formatTime(audioTime)}
+        class="input input-sm pointer-events-none text-right w-20"
+      />
+
+      <button
+        class="grow btn btn-sm btn-success"
+        class:btn-error={$playback === "play"}
+        on:click={togglePlayback}
+      >
+        {#if $playback === "play"}
+          <MPause />
+        {:else}
+          <MdPlayArrow />
+        {/if}
+      </button>
     </div>
 
     <label class="label-text" for="freq">Carrier frequency</label>
@@ -114,18 +165,6 @@
     </label>
 
     <div class="flex flex-row grow gap-2 mt-2">
-      <button
-        class="grow btn btn-sm btn-success"
-        class:btn-error={$playback === "play"}
-        on:click={togglePlayback}
-      >
-        {#if $playback === "play"}
-          <MdStop />
-        {:else}
-          <MdPlayArrow />
-        {/if}
-      </button>
-
       <div class="btn-group btn-horizontal">
         <button
           class="btn btn-sm p-2 pl-3 pr-3"
@@ -159,17 +198,6 @@
           <GiComputing />
         </button>
       </div>
-
-      <button
-        class="btn btn-sm p-2 pl-3 pr-3"
-        on:click={() => toggleOnOffState(audio)}
-      >
-        {#if $audio === "on"}
-          <MdVolumeUp />
-        {:else}
-          <MdVolumeOff />
-        {/if}
-      </button>
     </div>
   </div>
 </div>
