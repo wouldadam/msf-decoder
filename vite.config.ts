@@ -22,6 +22,7 @@ const vitestConfig: VitestConfig = {
         "*.config.{cjs,js,ts}",
         "**/*.d.ts",
         "**/*.stories.ts",
+        "**/*.test.ts",
       ],
     },
   },
