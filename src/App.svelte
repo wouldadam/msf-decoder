@@ -9,7 +9,8 @@
   } from "./lib/config";
   import { defaultProcessorKey, Processor } from "./lib/processing/Processor";
   import { eventStore, timeStore } from "./lib/time";
-  import Config from "./lib/ui/config/Config.svelte";
+  import Playback from "./lib/ui/config/Playback.svelte";
+  import Settings from "./lib/ui/config/Settings.svelte";
   import Scan from "./lib/ui/displays/Scan.svelte";
   import Scope from "./lib/ui/displays/Scope.svelte";
   import Waterfall from "./lib/ui/displays/Waterfall.svelte";
@@ -54,7 +55,11 @@
 
     <div class="flex flex-col gap-y-4 basis-1/3">
       <div class="shrink">
-        <Config />
+        <Playback />
+      </div>
+
+      <div class="shrink">
+        <Settings />
       </div>
 
       <div class="shrink">
