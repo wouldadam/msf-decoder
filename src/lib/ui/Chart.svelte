@@ -83,7 +83,7 @@
   function drawAxes(ctx: CanvasRenderingContext2D) {
     const width = canvas.width / window.devicePixelRatio;
     const height = canvas.height / window.devicePixelRatio;
-    const axisStyle = `hsla(${style.getPropertyValue("--b1")})`;
+    const axisStyle = `hsla(${style.getPropertyValue("--bc")})`;
 
     ctx.beginPath();
     ctx.lineWidth = 1;
