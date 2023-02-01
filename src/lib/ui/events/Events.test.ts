@@ -1,8 +1,8 @@
 import { render } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { CreateTimeFrame } from "../processing/msf";
-import { eventStore } from "../time";
+import { CreateTimeFrame } from "../../processing/msf";
+import { eventStore } from "../../time";
 import Events from "./Events.svelte";
 
 test("should render when no events", () => {

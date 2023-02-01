@@ -1,4 +1,4 @@
-import { CreateTimeFrame } from "../processing/msf";
+import { CreateTimeFrame } from "../../processing/msf";
 import Frames from "./Frames.svelte";
 
 export default {

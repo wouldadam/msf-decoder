@@ -1,8 +1,8 @@
 import { render, waitFor } from "@testing-library/svelte";
 import { beforeEach, test, vi } from "vitest";
-import { defaultProcessorKey } from "../processing/Processor";
-import ContextParent from "./ContextParent.svelte";
-import Scan from "./Scan.svelte";
+import ContextParent from "../../../test/ContextParent.svelte";
+import { defaultProcessorKey } from "../../processing/Processor";
+import Scope from "./Scope.svelte";
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 test("should render with no analyser", async () => {
-  const result = render(Scan);
+  const result = render(Scope);
 
   const canvas = result.getByTestId("chart-canvas") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d");
@@ -60,7 +60,7 @@ test("should render with a MediaDevice", async () => {
     props: {
       contextKey: defaultProcessorKey,
       contextValue: processor,
-      child: Scan,
+      child: Scope,
     },
   });
 
@@ -71,6 +71,6 @@ test("should render with a MediaDevice", async () => {
 
   await waitFor(() => expect(ctx.stroke).toBeCalled());
   await waitFor(() =>
-    expect(processor.analyser.getByteFrequencyData).toBeCalled()
+    expect(processor.analyser.getByteTimeDomainData).toBeCalled()
   );
 });

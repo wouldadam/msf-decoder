@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { timeStore } from "../time";
+  import { timeStore } from "../../time";
   import TimeFrame from "./TimeFrame.svelte";
 </script>
 

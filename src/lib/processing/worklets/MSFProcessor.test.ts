@@ -6,7 +6,7 @@ import {
   offsets,
   ValueState,
   type TimeFrame,
-} from "../processing/msf";
+} from "../msf";
 import { MSFProcessor } from "./MSFProcessor";
 
 const symbolRate = 10;

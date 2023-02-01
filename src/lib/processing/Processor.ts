@@ -5,14 +5,14 @@ import {
   type Writable,
 } from "svelte/store";
 import type { DisplayMode, OnOffState, PlaybackState } from "../config";
-import { ComparatorNode } from "../worklets/ComparatorNode";
-import { MSFNode } from "../worklets/MSFNode";
-import { RMSNode } from "../worklets/RMSNode";
+import { ComparatorNode } from "./worklets/ComparatorNode";
+import { MSFNode } from "./worklets/MSFNode";
+import { RMSNode } from "./worklets/RMSNode";
 
 import type { EventStore, TimeStore } from "../time";
-import comparatorProcessorUrl from "../worklets/ComparatorProcessor.ts?url";
-import msfProcessorUrl from "../worklets/MSFProcessor.ts?url";
-import rmsProcessorUrl from "../worklets/RMSProcessor.ts?url";
+import comparatorProcessorUrl from "./worklets/ComparatorProcessor.ts?url";
+import msfProcessorUrl from "./worklets/MSFProcessor.ts?url";
+import rmsProcessorUrl from "./worklets/RMSProcessor.ts?url";
 
 /**
  * Manages the processing of a selected audio stream.

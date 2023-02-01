@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ValueState, type FrameValue } from "../processing/msf";
+  import { ValueState, type FrameValue } from "../../processing/msf";
 
   export let value: FrameValue<any>;
   export let padChar: string = "0";

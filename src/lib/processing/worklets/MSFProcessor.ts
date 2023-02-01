@@ -6,8 +6,8 @@ import {
   parseSecond,
   validateFixedBits,
   type TimeFrame,
-} from "../processing/msf";
-import { RingBuffer } from "../processing/RingBuffer";
+} from "../msf";
+import { RingBuffer } from "../RingBuffer";
 import type {
   InvalidMark,
   MinuteMark,

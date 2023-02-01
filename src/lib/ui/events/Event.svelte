@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { MSFMsg } from "../worklets/MSFNode";
+  import type { MSFMsg } from "../../processing/worklets/MSFNode";
 
   export let event: MSFMsg | undefined;
   export let isOpen: boolean;

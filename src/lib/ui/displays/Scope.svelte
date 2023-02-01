@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getContext } from "svelte";
-  import { defaultProcessorKey, Processor } from "../processing/Processor";
+  import { defaultProcessorKey, Processor } from "../../processing/Processor";
   import Chart from "./Chart.svelte";
 
   const style = getComputedStyle(document.querySelector(":root"));

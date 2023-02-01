@@ -9,13 +9,13 @@
   } from "./lib/config";
   import { defaultProcessorKey, Processor } from "./lib/processing/Processor";
   import { eventStore, timeStore } from "./lib/time";
-  import Config from "./lib/ui/Config.svelte";
-  import Events from "./lib/ui/Events.svelte";
-  import Frames from "./lib/ui/Frames.svelte";
-  import Scan from "./lib/ui/Scan.svelte";
-  import Scope from "./lib/ui/Scope.svelte";
-  import Time from "./lib/ui/Time.svelte";
-  import Waterfall from "./lib/ui/Waterfall.svelte";
+  import Config from "./lib/ui/config/Config.svelte";
+  import Scan from "./lib/ui/displays/Scan.svelte";
+  import Scope from "./lib/ui/displays/Scope.svelte";
+  import Waterfall from "./lib/ui/displays/Waterfall.svelte";
+  import Events from "./lib/ui/events/Events.svelte";
+  import Frames from "./lib/ui/time/Frames.svelte";
+  import Time from "./lib/ui/time/Time.svelte";
 
   const processor = new Processor(
     audioSource,

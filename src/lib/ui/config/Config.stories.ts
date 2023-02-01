@@ -1,7 +1,7 @@
 import Config from "./Config.svelte";
 
 export default {
-  title: "Config",
+  title: "Config/Config",
   component: Config,
 };
 

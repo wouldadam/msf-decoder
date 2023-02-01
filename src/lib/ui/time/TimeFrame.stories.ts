@@ -3,7 +3,7 @@ import {
   DayOfWeek,
   ValueState,
   type TimeFrame,
-} from "../processing/msf";
+} from "../../processing/msf";
 import TimeFrameComp from "./TimeFrame.svelte";
 
 export default {

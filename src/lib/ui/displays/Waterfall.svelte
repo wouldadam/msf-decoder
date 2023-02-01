@@ -2,8 +2,8 @@
   import chroma from "chroma-js";
   import { getContext, onMount } from "svelte";
   import SvelteResizeObserver from "svelte-resize-observer";
-  import { carrierFrequencyHz, displayMode } from "../config";
-  import { defaultProcessorKey, Processor } from "../processing/Processor";
+  import { carrierFrequencyHz, displayMode } from "../../config";
+  import { defaultProcessorKey, Processor } from "../../processing/Processor";
 
   export let targetFps: number = 120;
   $: frameRateMs = (1 / targetFps) * 1000;

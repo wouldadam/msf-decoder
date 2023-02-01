@@ -1,6 +1,6 @@
 import { writable, type Writable } from "svelte/store";
 import { CreateTimeFrame, type TimeFrame } from "./processing/msf";
-import type { MSFMsg } from "./worklets/MSFNode";
+import type { MSFMsg } from "./processing/worklets/MSFNode";
 
 export interface TimeStore {
   /// The current time based on all decoded frames

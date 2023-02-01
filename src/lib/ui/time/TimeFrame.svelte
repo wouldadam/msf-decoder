@@ -4,7 +4,7 @@
     ValueState,
     type FrameValue as FrameValueObj,
     type TimeFrame,
-  } from "../processing/msf";
+  } from "../../processing/msf";
   import FrameValue from "./FrameValue.svelte";
 
   export let frame: TimeFrame;

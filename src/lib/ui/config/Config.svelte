@@ -17,8 +17,8 @@
     playback,
     type DisplayMode,
     type OnOffState,
-  } from "../config";
-  import { defaultProcessorKey, Processor } from "../processing/Processor";
+  } from "../../config";
+  import { defaultProcessorKey, Processor } from "../../processing/Processor";
 
   import { themeChange } from "theme-change";
 

@@ -1,11 +1,11 @@
 import type { Writable } from "svelte/store";
+import { maxEvents, type EventStore, type TimeStore } from "../../time";
 import {
   CreateTimeFrame,
   ValueState,
   type FrameValue,
   type TimeFrame,
-} from "../processing/msf";
-import { maxEvents, type EventStore, type TimeStore } from "../time";
+} from "../msf";
 
 const msfProcessorName = "msf-processor";
 

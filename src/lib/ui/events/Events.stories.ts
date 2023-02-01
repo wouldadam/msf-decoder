@@ -1,15 +1,15 @@
-import { CreateTimeFrame } from "../processing/msf";
-import { eventStore, maxEvents } from "../time";
+import { CreateTimeFrame } from "../../processing/msf";
 import type {
   InvalidMark,
   MinuteMark,
   MSFMsg,
   SecondMark,
-} from "../worklets/MSFNode";
+} from "../../processing/worklets/MSFNode";
+import { eventStore, maxEvents } from "../../time";
 import Events from "./Events.svelte";
 
 export default {
-  title: "Time/Events",
+  title: "Events/Events",
   component: Events,
 };
 

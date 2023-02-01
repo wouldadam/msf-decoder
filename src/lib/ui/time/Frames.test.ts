@@ -1,8 +1,8 @@
 import { render } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { CreateTimeFrame, DayOfWeek, ValueState } from "../processing/msf";
-import { timeStore } from "../time";
+import { CreateTimeFrame, DayOfWeek, ValueState } from "../../processing/msf";
+import { timeStore } from "../../time";
 import Frames from "./Frames.svelte";
 
 test("can display current and previous frames", async () => {

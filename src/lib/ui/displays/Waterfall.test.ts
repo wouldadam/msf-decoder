@@ -1,7 +1,7 @@
 import { render, waitFor } from "@testing-library/svelte";
 import { beforeEach, test, vi } from "vitest";
-import { defaultProcessorKey } from "../processing/Processor";
-import ContextParent from "./ContextParent.svelte";
+import ContextParent from "../../../test/ContextParent.svelte";
+import { defaultProcessorKey } from "../../processing/Processor";
 import Waterfall from "./Waterfall.svelte";
 
 beforeEach(() => {

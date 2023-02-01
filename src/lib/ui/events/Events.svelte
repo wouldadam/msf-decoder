@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { eventStore } from "../time";
-  import type { MSFMsg } from "../worklets/MSFNode";
+  import type { MSFMsg } from "../../processing/worklets/MSFNode";
+  import { eventStore } from "../../time";
   import Event from "./Event.svelte";
 
   let modalEvent: MSFMsg | undefined = undefined;
