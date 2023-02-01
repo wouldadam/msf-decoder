@@ -17,8 +17,6 @@
   $: frameRateMs = (1 / targetFps) * 1000;
 
   const style = getComputedStyle(document.querySelector(":root"));
-  const bgStyle = `hsla(${style.getPropertyValue("--b2")})`;
-  const axisStyle = `hsla(${style.getPropertyValue("--b1")})`;
 
   let canvasContainer: HTMLDivElement;
   let canvas: HTMLCanvasElement;
@@ -71,6 +69,8 @@
     }
     lastDrawTime = time;
 
+    const bgStyle = `hsla(${style.getPropertyValue("--b2")})`;
+
     ctx.fillStyle = bgStyle;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -83,6 +83,7 @@
   function drawAxes(ctx: CanvasRenderingContext2D) {
     const width = canvas.width / window.devicePixelRatio;
     const height = canvas.height / window.devicePixelRatio;
+    const axisStyle = `hsla(${style.getPropertyValue("--b1")})`;
 
     ctx.beginPath();
     ctx.lineWidth = 1;

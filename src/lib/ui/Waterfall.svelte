@@ -9,9 +9,6 @@
   $: frameRateMs = (1 / targetFps) * 1000;
 
   const style = getComputedStyle(document.querySelector(":root"));
-  const bgStyle = `hsla(${style.getPropertyValue("--b2")})`;
-  const axisStyle = `hsla(${style.getPropertyValue("--b1")})`;
-  const carrierStyle = `hsla(${style.getPropertyValue("--a")})`;
   const scale = chroma.cubehelix().scale().domain([0, 255]).correctLightness();
 
   let canvasContainer: HTMLDivElement;
@@ -74,6 +71,8 @@
     }
     lastDrawTime = time;
 
+    const bgStyle = `hsla(${style.getPropertyValue("--b2")})`;
+
     // Move the current waterfall upwards
     if (processor?.context?.state === "running") {
       try {
@@ -104,6 +103,7 @@
   function drawAxes(ctx: CanvasRenderingContext2D) {
     const width = ctx.canvas.width / window.devicePixelRatio;
     const height = ctx.canvas.height / window.devicePixelRatio;
+    const axisStyle = `hsla(${style.getPropertyValue("--b1")})`;
 
     ctx.beginPath();
     ctx.lineWidth = 1;
@@ -157,6 +157,7 @@
   function drawCarrier(ctx: CanvasRenderingContext2D) {
     const width = ctx.canvas.width / window.devicePixelRatio;
     const height = ctx.canvas.height / window.devicePixelRatio;
+    const carrierStyle = `hsla(${style.getPropertyValue("--a")})`;
 
     const freqPerPx = freqMax / width;
     const x = $carrierFrequencyHz / freqPerPx;

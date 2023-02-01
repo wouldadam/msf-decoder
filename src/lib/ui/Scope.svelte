@@ -4,7 +4,6 @@
   import Chart from "./Chart.svelte";
 
   const style = getComputedStyle(document.querySelector(":root"));
-  const lineStyle = `hsla(${style.getPropertyValue("--p")})`;
 
   let buffer: Uint8Array | null = null;
 
@@ -25,6 +24,7 @@
   function drawLine(ctx: CanvasRenderingContext2D) {
     const width = ctx.canvas.width / window.devicePixelRatio;
     const height = ctx.canvas.height / window.devicePixelRatio;
+    const lineStyle = `hsla(${style.getPropertyValue("--p")})`;
 
     let min = Number.MAX_VALUE;
     let max = Number.MIN_VALUE;

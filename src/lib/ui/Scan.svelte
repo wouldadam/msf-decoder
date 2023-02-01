@@ -5,8 +5,6 @@
   import Chart from "./Chart.svelte";
 
   const style = getComputedStyle(document.querySelector(":root"));
-  const lineStyle = `hsla(${style.getPropertyValue("--p")})`;
-  const carrierStyle = `hsla(${style.getPropertyValue("--a")})`;
 
   const sampleMin = 0;
   const sampleMax = 255;
@@ -22,6 +20,7 @@
   function drawLine(ctx: CanvasRenderingContext2D) {
     const width = ctx.canvas.width / window.devicePixelRatio;
     const height = ctx.canvas.height / window.devicePixelRatio;
+    const lineStyle = `hsla(${style.getPropertyValue("--p")})`;
 
     let min = Number.MAX_VALUE;
     let max = Number.MIN_VALUE;
@@ -75,6 +74,7 @@
   function drawCarrier(ctx: CanvasRenderingContext2D) {
     const width = ctx.canvas.width / window.devicePixelRatio;
     const height = ctx.canvas.height / window.devicePixelRatio;
+    const carrierStyle = `hsla(${style.getPropertyValue("--a")})`;
 
     const freqPerPx = freqMax / width;
     const x = $carrierFrequencyHz / freqPerPx;
