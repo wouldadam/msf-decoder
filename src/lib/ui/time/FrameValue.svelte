@@ -26,7 +26,7 @@
   padChar and padWidth can be used to prefix a defined value.
 -->
 <span
-  class="contents"
+  class="contents transition duration-1000 ease-in-out"
   class:text-warning={value.state === ValueState.Incomplete}
   class:text-info={value.state === ValueState.Complete}
   class:text-error={value.state === ValueState.Invalid}
