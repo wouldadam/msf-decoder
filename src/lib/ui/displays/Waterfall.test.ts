@@ -1,4 +1,5 @@
 import { render, waitFor } from "@testing-library/svelte";
+import { displayMode } from "src/lib/config";
 import { beforeEach, test, vi } from "vitest";
 import ContextParent from "../../../test/ContextParent.svelte";
 import { defaultProcessorKey } from "../../processing/Processor";
@@ -17,6 +18,8 @@ afterEach(() => {
   vi.clearAllTimers();
 });
 test("should render with no analyser", async () => {
+  displayMode.set("raw");
+
   const result = render(Waterfall);
 
   const canvas = result.getByTestId("waterfall-canvas") as HTMLCanvasElement;
@@ -53,7 +56,12 @@ test("should render with a MediaDevice", async () => {
       getFloatTimeDomainData: vi.fn(),
       getByteTimeDomainData: vi.fn(),
     },
+    context: {
+      state: "running",
+    },
   };
+
+  displayMode.set("filter");
 
   const result = render(ContextParent, {
     props: {

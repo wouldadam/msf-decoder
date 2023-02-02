@@ -4,14 +4,24 @@
 
   interface Axis {
     label: string;
-    minLabel?: string;
-    maxLabel?: string;
-    position?: "center" | "side";
+    minLabel: string;
+    maxLabel: string;
+    position: "center" | "side";
   }
 
   export let targetFps: number = 20;
-  export let xAxis: Axis = { label: "X" };
-  export let yAxis: Axis = { label: "Y" };
+  export let xAxis: Axis = {
+    label: "X",
+    minLabel: "",
+    maxLabel: "",
+    position: "side",
+  };
+  export let yAxis: Axis = {
+    label: "Y",
+    minLabel: "",
+    maxLabel: "",
+    position: "side",
+  };
   export let drawLine: (ctx: CanvasRenderingContext2D) => void = () => {};
 
   $: frameRateMs = (1 / targetFps) * 1000;
@@ -90,7 +100,7 @@
     ctx.strokeStyle = axisStyle;
 
     // X
-    if (!xAxis.position || xAxis.position === "side") {
+    if (xAxis.position === "side") {
       ctx.moveTo(0, height);
       ctx.lineTo(width, height);
     } else {
@@ -99,7 +109,7 @@
     }
 
     // Y
-    if (!yAxis.position || yAxis.position === "side") {
+    if (yAxis.position === "side") {
       ctx.moveTo(0, 0);
       ctx.lineTo(0, height);
     } else {
@@ -121,11 +131,11 @@
 <div class="flex w-full h-full flex-col">
   <div class="flex flex-row grow items-center">
     <div class="flex h-full w-10 flex-col justify-between items-center">
-      <span class="text-xs">{yAxis.maxLabel || ""}</span>
-      <span class="text-xs h-min whitespace-nowrap -rotate-90 "
+      <span class="text-xs">{yAxis.maxLabel}</span>
+      <span class="text-xs h-min whitespace-nowrap -rotate-90"
         >{yAxis.label}</span
       >
-      <span class="text-xs">{yAxis.minLabel || ""}</span>
+      <span class="text-xs">{yAxis.minLabel}</span>
     </div>
 
     <div class="w-full h-full" bind:this={canvasContainer}>
@@ -142,8 +152,8 @@
   </div>
 
   <div class="flex flex-row justify-between">
-    <span class="text-xs pl-8">{xAxis.minLabel || ""}</span>
+    <span class="text-xs pl-8">{xAxis.minLabel}</span>
     <span class="text-xs">{xAxis.label}</span>
-    <span class="text-xs">{xAxis.maxLabel || ""}</span>
+    <span class="text-xs">{xAxis.maxLabel}</span>
   </div>
 </div>

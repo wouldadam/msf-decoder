@@ -24,6 +24,9 @@ test("should render with no props", async () => {
   vi.advanceTimersByTime(10000);
 
   await waitFor(() => expect(ctx.stroke).toBeCalled());
+
+  expect(result.container).toHaveTextContent("X");
+  expect(result.container).toHaveTextContent("Y");
 });
 
 test("should render with props", async () => {
@@ -35,11 +38,13 @@ test("should render with props", async () => {
       label: "x-label",
       minLabel: "x-min-label",
       maxLabel: "x-max-label",
+      position: "side",
     },
     yAxis: {
       label: "y-label",
       minLabel: "y-min-label",
       maxLabel: "y-max-label",
+      position: "side",
     },
   });
 

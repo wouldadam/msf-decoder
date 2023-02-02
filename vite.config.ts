@@ -23,6 +23,8 @@ const vitestConfig: VitestConfig = {
         "**/*.d.ts",
         "**/*.stories.ts",
         "**/*.test.ts",
+        "src/main.ts",
+        "src/App.svelte",
       ],
     },
   },

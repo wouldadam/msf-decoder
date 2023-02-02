@@ -91,6 +91,10 @@
 -->
 <div class="card card-compact w-full h-full bg-base-200 shadow-xl">
   <div class="card-body flex">
-    <Chart {xAxis} yAxis={{ label: "Amp" }} {drawLine} />
+    <Chart
+      {xAxis}
+      yAxis={{ label: "Amp", minLabel: "", maxLabel: "", position: "side" }}
+      {drawLine}
+    />
   </div>
 </div>

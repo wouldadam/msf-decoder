@@ -113,11 +113,13 @@
         label: "Frequency (Hz)",
         minLabel: "0",
         maxLabel: freqMax.toFixed(0),
+        position: "side",
       }}
       yAxis={{
         label: "Power (dB)",
         minLabel: dBMin.toFixed(0),
         maxLabel: dBMax.toFixed(0),
+        position: "side",
       }}
       on:click={onClick}
     />

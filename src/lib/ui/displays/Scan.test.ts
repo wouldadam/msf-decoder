@@ -1,4 +1,5 @@
 import { render, waitFor } from "@testing-library/svelte";
+import { displayMode } from "src/lib/config";
 import { beforeEach, test, vi } from "vitest";
 import ContextParent from "../../../test/ContextParent.svelte";
 import { defaultProcessorKey } from "../../processing/Processor";
@@ -18,6 +19,8 @@ afterEach(() => {
 });
 
 test("should render with no analyser", async () => {
+  displayMode.set("raw");
+
   const result = render(Scan);
 
   const canvas = result.getByTestId("chart-canvas") as HTMLCanvasElement;
@@ -55,6 +58,8 @@ test("should render with a MediaDevice", async () => {
       getByteTimeDomainData: vi.fn(),
     },
   };
+
+  displayMode.set("filter");
 
   const result = render(ContextParent, {
     props: {
