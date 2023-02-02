@@ -202,7 +202,7 @@
           <canvas
             width="0"
             height="0"
-            class="fixed"
+            class="absolute"
             data-testid="waterfall-canvas"
             bind:this={waterfallCanvas}
           />
@@ -210,7 +210,7 @@
           <canvas
             width="0"
             height="0"
-            class="fixed"
+            class="absolute"
             data-testid="carrier-canvas"
             bind:this={carrierCanvas}
             on:click={onClick}

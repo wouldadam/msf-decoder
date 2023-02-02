@@ -133,7 +133,7 @@
       <canvas
         width="0"
         height="0"
-        class="fixed"
+        class="absolute"
         data-testid="chart-canvas"
         bind:this={canvas}
         on:click
