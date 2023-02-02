@@ -23,10 +23,7 @@
 
   $: dayOfWeek = {
     ...frame.dayOfWeek,
-    val:
-      frame.dayOfWeek !== undefined
-        ? Object.values(DayOfWeek)[frame.dayOfWeek.val]
-        : undefined,
+    val: Object.values(DayOfWeek)[frame.dayOfWeek.val],
   };
 
   $: flags = [
@@ -48,9 +45,13 @@
   ];
 </script>
 
+<!--
+  @component
+  Displays a TimeFrame from MSF.
+-->
 <div class="@container w-full h-full flex flex-col gap-2">
   <div
-    class="bg-base-100 w-full rounded-xl flex flex-col @xl:flex-row px-4 text-4xl font-extrabold"
+    class="bg-base-100 w-full rounded-xl flex flex-col @xl:flex-row px-4 text-4xl font-extrabold font-mono"
   >
     <div class="flex flex-row flex-wrap @xl:w-4/6 pt-2 @xl:pt-2 justify-center">
       <div>
