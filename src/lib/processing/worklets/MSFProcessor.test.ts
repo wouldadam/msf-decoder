@@ -415,8 +415,6 @@ test("receiving an invalid segment is invalid", () => {
   feedProcessor(processor, input);
 
   // Check we got the expected invalid data event
-  const mockPost = processor.port.postMessage as Mock;
-  console.log(mockPost.mock.calls);
   expect(processor.port.postMessage).toBeCalledTimes(3);
   expect(processor.port.postMessage).toHaveBeenNthCalledWith(
     3,

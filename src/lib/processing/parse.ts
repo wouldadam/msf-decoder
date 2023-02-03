@@ -1,5 +1,5 @@
 import { aBitOffset, bBitOffset, bcdBits, secondOffsets } from "./constants";
-import { ValueState } from "./FrameValue";
+import { ValueState, type FrameValue } from "./FrameValue";
 import type { RingBuffer } from "./RingBuffer";
 import type { DUT1, TimeFrame } from "./TimeFrame";
 
@@ -27,6 +27,29 @@ function getParityState(
     : ValueState.Invalid;
 }
 
+/// Increments a numeric FrameValue based on a specified bit in the buffer
+/// and the current second.
+function updateFrameValue(
+  frameValue: FrameValue<number>,
+  bits: RingBuffer,
+  valueBitOffset: number,
+  currentSecond: number,
+  startSecond: number,
+  endSecond: number
+) {
+  if (bits.at(valueBitOffset) === 1) {
+    const value = bcdBitValue(currentSecond, startSecond, endSecond);
+    frameValue.val += value;
+    frameValue.bitCount += 1;
+  }
+
+  if (currentSecond === endSecond) {
+    frameValue.state = ValueState.Complete;
+  } else {
+    frameValue.state = ValueState.Incomplete;
+  }
+}
+
 /// Parses the data out of a second segment and populates the TimeFrame.
 /// Returns an error if the data doesn't make sense.
 export function parseSecond(
@@ -37,16 +60,18 @@ export function parseSecond(
   // Positive DUT1
   if (
     currentSecond >= secondOffsets.dut1Pos[0] &&
-    currentSecond <= secondOffsets.dut1Pos[1] &&
-    bits.at(bBitOffset) === 1
+    currentSecond <= secondOffsets.dut1Pos[1]
   ) {
-    if (currentFrame.dut1.state !== ValueState.Unset) {
-      return Error("Multiple dut1 bits set.");
+    if (bits.at(bBitOffset) === 1) {
+      if (currentFrame.dut1.state !== ValueState.Unset) {
+        return Error("Multiple dut1 bits set.");
+      }
+
+      currentFrame.dut1.val = (currentSecond / 10) as DUT1;
+      currentFrame.dut1.bitCount += 1;
     }
 
-    currentFrame.dut1.val = (currentSecond / 10) as DUT1;
     currentFrame.dut1.state = ValueState.Incomplete;
-    currentFrame.dut1.bitCount += 1;
   }
   // Negative DUT1
   else if (
@@ -60,7 +85,6 @@ export function parseSecond(
 
       const absDut1 = currentSecond - secondOffsets.dut1Neg[1] - 1;
       currentFrame.dut1.val = (absDut1 / 10) as DUT1;
-      currentFrame.dut1.state = ValueState.Incomplete;
       currentFrame.dut1.bitCount += 1;
     }
 
@@ -72,6 +96,8 @@ export function parseSecond(
       }
 
       currentFrame.dut1.state = ValueState.Valid;
+    } else {
+      currentFrame.dut1.state = ValueState.Incomplete;
     }
   }
   // Date
@@ -79,112 +105,76 @@ export function parseSecond(
     currentSecond >= secondOffsets.year[0] &&
     currentSecond <= secondOffsets.year[1]
   ) {
-    if (bits.at(aBitOffset) === 1) {
-      const value = bcdBitValue(
-        currentSecond,
-        secondOffsets.year[0],
-        secondOffsets.year[1]
-      );
-      currentFrame.year.val += value;
-      currentFrame.year.state = ValueState.Incomplete;
-      currentFrame.year.bitCount += 1;
-    }
-
-    if (currentSecond === secondOffsets.year[1]) {
-      currentFrame.year.state = ValueState.Complete;
-    }
+    updateFrameValue(
+      currentFrame.year,
+      bits,
+      aBitOffset,
+      currentSecond,
+      secondOffsets.year[0],
+      secondOffsets.year[1]
+    );
   } else if (
     currentSecond >= secondOffsets.month[0] &&
     currentSecond <= secondOffsets.month[1]
   ) {
-    if (bits.at(aBitOffset) === 1) {
-      const value = bcdBitValue(
-        currentSecond,
-        secondOffsets.month[0],
-        secondOffsets.month[1]
-      );
-      currentFrame.month.val += value;
-      currentFrame.month.state = ValueState.Incomplete;
-      currentFrame.month.bitCount += 1;
-    }
-
-    if (currentSecond === secondOffsets.month[1]) {
-      currentFrame.month.state = ValueState.Complete;
-    }
+    updateFrameValue(
+      currentFrame.month,
+      bits,
+      aBitOffset,
+      currentSecond,
+      secondOffsets.month[0],
+      secondOffsets.month[1]
+    );
   } else if (
     currentSecond >= secondOffsets.dayOfMonth[0] &&
     currentSecond <= secondOffsets.dayOfMonth[1]
   ) {
-    if (bits.at(aBitOffset) === 1) {
-      const value = bcdBitValue(
-        currentSecond,
-        secondOffsets.dayOfMonth[0],
-        secondOffsets.dayOfMonth[1]
-      );
-      currentFrame.dayOfMonth.val += value;
-      currentFrame.dayOfMonth.state = ValueState.Incomplete;
-      currentFrame.dayOfMonth.bitCount += 1;
-    }
-
-    if (currentSecond === secondOffsets.dayOfMonth[1]) {
-      currentFrame.dayOfMonth.state = ValueState.Complete;
-    }
+    updateFrameValue(
+      currentFrame.dayOfMonth,
+      bits,
+      aBitOffset,
+      currentSecond,
+      secondOffsets.dayOfMonth[0],
+      secondOffsets.dayOfMonth[1]
+    );
   } else if (
     currentSecond >= secondOffsets.dayOfWeek[0] &&
     currentSecond <= secondOffsets.dayOfWeek[1]
   ) {
-    if (bits.at(aBitOffset) === 1) {
-      const value = bcdBitValue(
-        currentSecond,
-        secondOffsets.dayOfWeek[0],
-        secondOffsets.dayOfWeek[1]
-      );
-      currentFrame.dayOfWeek.val += value;
-      currentFrame.dayOfWeek.state = ValueState.Incomplete;
-      currentFrame.dayOfWeek.bitCount += 1;
-    }
-
-    if (currentSecond === secondOffsets.dayOfWeek[1]) {
-      currentFrame.dayOfWeek.state = ValueState.Complete;
-    }
+    updateFrameValue(
+      currentFrame.dayOfWeek,
+      bits,
+      aBitOffset,
+      currentSecond,
+      secondOffsets.dayOfWeek[0],
+      secondOffsets.dayOfWeek[1]
+    );
   }
   // Time
   else if (
     currentSecond >= secondOffsets.hour[0] &&
     currentSecond <= secondOffsets.hour[1]
   ) {
-    if (bits.at(aBitOffset) === 1) {
-      const value = bcdBitValue(
-        currentSecond,
-        secondOffsets.hour[0],
-        secondOffsets.hour[1]
-      );
-      currentFrame.hour.val += value;
-      currentFrame.hour.state = ValueState.Incomplete;
-      currentFrame.hour.bitCount += 1;
-    }
-
-    if (currentSecond === secondOffsets.hour[1]) {
-      currentFrame.hour.state = ValueState.Complete;
-    }
+    updateFrameValue(
+      currentFrame.hour,
+      bits,
+      aBitOffset,
+      currentSecond,
+      secondOffsets.hour[0],
+      secondOffsets.hour[1]
+    );
   } else if (
     currentSecond >= secondOffsets.minute[0] &&
     currentSecond <= secondOffsets.minute[1]
   ) {
-    if (bits.at(aBitOffset) === 1) {
-      const value = bcdBitValue(
-        currentSecond,
-        secondOffsets.minute[0],
-        secondOffsets.minute[1]
-      );
-      currentFrame.minute.val += value;
-      currentFrame.minute.state = ValueState.Incomplete;
-      currentFrame.minute.bitCount += 1;
-    }
-
-    if (currentSecond === secondOffsets.minute[1]) {
-      currentFrame.minute.state = ValueState.Complete;
-    }
+    updateFrameValue(
+      currentFrame.minute,
+      bits,
+      aBitOffset,
+      currentSecond,
+      secondOffsets.minute[0],
+      secondOffsets.minute[1]
+    );
   }
   // Summer time warning
   else if (currentSecond === secondOffsets.summerTimeWarning[0]) {

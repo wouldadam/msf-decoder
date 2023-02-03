@@ -45,8 +45,36 @@ class AudioWorkletNode {
   constructor() {}
 }
 
+class AudioBufferSourceNode {
+  buffer: AudioBuffer | null = null;
+  readonly detune: AudioParam;
+  loop: boolean = false;
+  loopEnd: number = 0;
+  loopStart: number = 1;
+  readonly playbackRate: AudioParam;
+
+  channelCount: number = 1;
+  channelCountMode: ChannelCountMode = "explicit";
+  channelInterpretation: ChannelInterpretation = "discrete";
+  readonly context: BaseAudioContext = null;
+  readonly numberOfInputs: number = 1;
+  readonly numberOfOutputs: number = 1;
+
+  addEventListener = vi.fn();
+  removeEventListener = vi.fn();
+  dispatchEvent = vi.fn();
+
+  onended = vi.fn();
+  start = vi.fn();
+  stop = vi.fn();
+
+  connect = vi.fn();
+  disconnect = vi.fn();
+}
+
 global.AudioWorkletProcessor = AudioWorkletProcessor;
 global.AudioWorkletNode = AudioWorkletNode;
+global.AudioBufferSourceNode = AudioBufferSourceNode;
 global.registerProcessor = vi.fn();
 
 beforeEach(() => {
