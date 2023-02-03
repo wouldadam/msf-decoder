@@ -1,4 +1,5 @@
 import { test } from "vitest";
+import { RMSNode } from "./RMSNode";
 import { RMSProcessor } from "./RMSProcessor";
 
 const frameSize = 128;
@@ -35,4 +36,9 @@ test("alpha of one means input is output", () => {
   processor.process(inputs, outputs, {});
 
   expect(outputs[0][0]).toContain(inputs[0][0]);
+});
+
+test("can create node", () => {
+  const node = new RMSNode(jest.fn() as any, { alpha: 0 });
+  expect(node).not.toBeNull();
 });

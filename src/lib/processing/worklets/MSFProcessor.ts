@@ -35,9 +35,9 @@ function first10(buffer: RingBuffer) {
 }
 
 /**
- * Demodulates on/off keyed audio data.
- * Outputs samples are 0 or 1.
- * Excess output samples are set to -1.
+ * Demodulates MSF data.
+ * Assumes that data has been through an envelope/comparator but still requires
+ * demod and time synchronization.
  */
 export class MSFProcessor extends AudioWorkletProcessor {
   private samplesPerSymbol: number;
@@ -260,6 +260,7 @@ export class MSFProcessor extends AudioWorkletProcessor {
 
     if (result instanceof Error) {
       this.invalidSegment(result.message, first10(this.symbolRing));
+      return;
     }
 
     // Notify the node

@@ -1,4 +1,5 @@
 import { test } from "vitest";
+import { ComparatorNode } from "./ComparatorNode";
 import { ComparatorProcessor } from "./ComparatorProcessor";
 
 const frameSize = 128;
@@ -39,3 +40,11 @@ test.each([["positive"], ["negative"]])(
     }
   }
 );
+
+test("can create node", () => {
+  const node = new ComparatorNode(jest.fn() as any, {
+    polarity: "negative",
+    threshold: 1,
+  });
+  expect(node).not.toBeNull();
+});

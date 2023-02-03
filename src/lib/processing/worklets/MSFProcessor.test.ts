@@ -101,7 +101,7 @@ function toBCD(value: number, length: number) {
   return [bits, parity, bitCount] as const;
 }
 
-/// Creates all of the segments for and entire frame
+/// Creates all of the segments for an entire frame
 function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
   const ops = [minuteDesc()];
 
@@ -268,6 +268,150 @@ test.each([0, 0.25, 0.5, 0.75, 1, 60])(
   }
 );
 
-test.todo("decode frame with failed parity", () => {});
-test.todo("decode frame with bad bits", () => {});
-test.todo("decode multiple frames", () => {});
+test("receiving a second segment outside a frame is invalid", () => {
+  // Create a processor
+  const processor = new MSFProcessor({
+    processorOptions: {
+      symbolRate,
+    },
+  });
+
+  // Create a lonely second segment
+  const segments: Array<InputDesc> = [secondDesc(0, 1)];
+
+  // Turn it into bits
+  const input = createInput(segments);
+
+  // Feed it to the processor
+  feedProcessor(processor, input);
+
+  // Check we got the expected invalid data event
+  expect(processor.port.postMessage).toBeCalledTimes(1);
+  expect(processor.port.postMessage).toBeCalledWith(
+    expect.objectContaining({
+      msg: "invalid",
+      reason: "Segment outside a frame.",
+    })
+  );
+});
+
+test("receiving a invalid data within a frame is invalid", () => {
+  const samplesPerSymbol = sampleRate / symbolRate;
+
+  // Create a processor
+  const processor = new MSFProcessor({
+    processorOptions: {
+      symbolRate,
+    },
+  });
+
+  // Create a minute start followed by just zeros
+  const segments: Array<InputDesc> = [
+    minuteDesc(),
+    zeroDesc(samplesPerSymbol * symbolRate),
+  ];
+
+  // Turn it into bits
+  const input = createInput(segments);
+
+  // Feed it to the processor
+  feedProcessor(processor, input);
+
+  // Check we got the expected invalid data event
+  expect(processor.port.postMessage).toBeCalledTimes(2);
+  expect(processor.port.postMessage).toHaveBeenNthCalledWith(
+    1,
+    expect.objectContaining({
+      msg: "minute",
+    })
+  );
+  expect(processor.port.postMessage).toHaveBeenNthCalledWith(
+    2,
+    expect.objectContaining({
+      msg: "invalid",
+      reason: "Segment has invalid data.",
+    })
+  );
+});
+
+test("receiving a invalid fixed bits is invalid", () => {
+  // Create a processor
+  const processor = new MSFProcessor({
+    processorOptions: {
+      symbolRate,
+    },
+  });
+
+  // Create a minute start followed by just zeros
+  const frame: TimeFrame = {
+    dut1: { val: 0.1, bitCount: 0, state: ValueState.Valid },
+    year: { val: 33, bitCount: 0, state: ValueState.Valid },
+    month: { val: 10, bitCount: 0, state: ValueState.Valid },
+    dayOfMonth: { val: 11, bitCount: 0, state: ValueState.Valid },
+    dayOfWeek: {
+      val: DayOfWeek.Monday,
+      bitCount: 0,
+      state: ValueState.Valid,
+    },
+    hour: { val: 20, bitCount: 0, state: ValueState.Valid },
+    minute: { val: 44, bitCount: 0, state: ValueState.Valid },
+    summerTimeWarning: { val: false, bitCount: 0, state: ValueState.Valid },
+    summerTime: { val: true, bitCount: 0, state: ValueState.Valid },
+  };
+
+  const segments: Array<InputDesc> = createFrameSegments(frame);
+
+  // The first required fixed bits are second 52 and they should be 00 so set them to 11
+  segments[52] = secondDesc(1, 1);
+  segments.length = 53;
+
+  // Turn it into bits
+  const input = createInput(segments);
+
+  // Feed it to the processor
+  feedProcessor(processor, input);
+
+  // Check we got the expected invalid data event
+  expect(processor.port.postMessage).toBeCalledTimes(53);
+  expect(processor.port.postMessage).toHaveBeenNthCalledWith(
+    53,
+    expect.objectContaining({
+      msg: "invalid",
+      reason: "Invalid fixed bits.",
+    })
+  );
+});
+
+test("receiving an invalid segment is invalid", () => {
+  // Create a processor
+  const processor = new MSFProcessor({
+    processorOptions: {
+      symbolRate,
+    },
+  });
+
+  // Create a minute start followed multiple set DUT 1 bits (invalid)
+  const segments: Array<InputDesc> = [
+    minuteDesc(),
+    secondDesc(1, 1),
+    secondDesc(1, 1),
+  ];
+
+  // Turn it into bits
+  const input = createInput(segments);
+
+  // Feed it to the processor
+  feedProcessor(processor, input);
+
+  // Check we got the expected invalid data event
+  const mockPost = processor.port.postMessage as Mock;
+  console.log(mockPost.mock.calls);
+  expect(processor.port.postMessage).toBeCalledTimes(3);
+  expect(processor.port.postMessage).toHaveBeenNthCalledWith(
+    3,
+    expect.objectContaining({
+      msg: "invalid",
+      reason: "Multiple dut1 bits set.",
+    })
+  );
+});

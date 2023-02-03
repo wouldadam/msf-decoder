@@ -102,6 +102,7 @@ export class MSFNode extends AudioWorkletNode {
     this.port.onmessage = this.onMessage;
   }
 
+  /// Handle incoming events from the MSFProcessor to create our view of time.
   private onMessage = (ev: MessageEvent<MSFMsg>) => {
     if (ev.data.msg === "minute") {
       this.timeStore.update((store) => {
@@ -137,6 +138,7 @@ export class MSFNode extends AudioWorkletNode {
     this.addEvent(ev.data);
   };
 
+  /// Merge updated frame information into an existing time frame.
   private merge(currentTime: TimeFrame, newFrame: TimeFrame): TimeFrame {
     const newTime = {
       ...currentTime,
@@ -152,6 +154,7 @@ export class MSFNode extends AudioWorkletNode {
     return newTime;
   }
 
+  /// Add an event to the eventStore, maintaining the max size.
   private addEvent(event: MSFMsg) {
     this.eventStore.update((store) => {
       const events = [event, ...store.events];

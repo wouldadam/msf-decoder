@@ -7,7 +7,7 @@ interface ComparatorProcessorOptions extends AudioWorkletNodeOptions {
 }
 
 /**
- * Turns audio samples into zeros and ones based on a dynamic threshold.
+ * Turns audio samples into zeros and ones based on a threshold.
  */
 export class ComparatorProcessor extends AudioWorkletProcessor {
   private on = 1;
