@@ -1,7 +1,8 @@
 import { render } from "@testing-library/svelte";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { CreateTimeFrame, DayOfWeek, ValueState } from "../../processing/msf";
+import { ValueState } from "../../processing/FrameValue";
+import { CreateTimeFrame, DayOfWeek } from "../../processing/TimeFrame";
 import { timeStore } from "../../time";
 import Frames from "./Frames.svelte";
 

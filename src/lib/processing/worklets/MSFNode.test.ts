@@ -1,6 +1,7 @@
 import { get, writable } from "svelte/store";
 import { test, vi } from "vitest";
-import { CreateTimeFrame, ValueState } from "../msf";
+import { ValueState } from "../FrameValue";
+import { CreateTimeFrame } from "../TimeFrame";
 import {
   MSFNode,
   type InvalidMark,

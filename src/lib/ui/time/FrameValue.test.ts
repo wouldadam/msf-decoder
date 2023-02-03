@@ -1,5 +1,5 @@
 import { render } from "@testing-library/svelte";
-import { ValueState } from "src/lib/processing/msf";
+import { ValueState } from "src/lib/processing/FrameValue";
 import { expect, test } from "vitest";
 import FrameValue from "./FrameValue.svelte";
 

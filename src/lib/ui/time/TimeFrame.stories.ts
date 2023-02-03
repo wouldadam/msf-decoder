@@ -1,9 +1,9 @@
+import { ValueState } from "../..//processing/FrameValue";
 import {
   CreateTimeFrame,
   DayOfWeek,
-  ValueState,
   type TimeFrame,
-} from "../../processing/msf";
+} from "../../processing/TimeFrame";
 import TimeFrameComp from "./TimeFrame.svelte";
 
 export default {

@@ -1,12 +1,7 @@
 import { expect, test, type Mock } from "vitest";
-import {
-  bcdBits,
-  DayOfWeek,
-  minuteSegment,
-  offsets,
-  ValueState,
-  type TimeFrame,
-} from "../msf";
+import { bcdBits, minuteSegment, secondOffsets } from "../constants";
+import { ValueState } from "../FrameValue";
+import { DayOfWeek, type TimeFrame } from "../TimeFrame";
 import { MSFProcessor } from "./MSFProcessor";
 
 const symbolRate = 10;
@@ -142,39 +137,55 @@ function createFrameSegments(frame: TimeFrame): Array<InputDesc> {
       ops.push(secondDesc(0, 1));
     }
     // Date
-    else if (second >= offsets.year[0] && second <= offsets.year[1]) {
-      ops.push(secondDesc(yearBits[second - offsets.year[0]], 0));
-    } else if (second >= offsets.month[0] && second <= offsets.month[1]) {
-      ops.push(secondDesc(monthBits[second - offsets.month[0]], 0));
-    } else if (
-      second >= offsets.dayOfMonth[0] &&
-      second <= offsets.dayOfMonth[1]
+    else if (
+      second >= secondOffsets.year[0] &&
+      second <= secondOffsets.year[1]
     ) {
-      ops.push(secondDesc(dayOfMonthBits[second - offsets.dayOfMonth[0]], 0));
+      ops.push(secondDesc(yearBits[second - secondOffsets.year[0]], 0));
     } else if (
-      second >= offsets.dayOfWeek[0] &&
-      second <= offsets.dayOfWeek[1]
+      second >= secondOffsets.month[0] &&
+      second <= secondOffsets.month[1]
     ) {
-      ops.push(secondDesc(dayOfWeekBits[second - offsets.dayOfWeek[0]], 0));
+      ops.push(secondDesc(monthBits[second - secondOffsets.month[0]], 0));
+    } else if (
+      second >= secondOffsets.dayOfMonth[0] &&
+      second <= secondOffsets.dayOfMonth[1]
+    ) {
+      ops.push(
+        secondDesc(dayOfMonthBits[second - secondOffsets.dayOfMonth[0]], 0)
+      );
+    } else if (
+      second >= secondOffsets.dayOfWeek[0] &&
+      second <= secondOffsets.dayOfWeek[1]
+    ) {
+      ops.push(
+        secondDesc(dayOfWeekBits[second - secondOffsets.dayOfWeek[0]], 0)
+      );
     }
     // Time
-    else if (second >= offsets.hour[0] && second <= offsets.hour[1]) {
-      ops.push(secondDesc(hourBits[second - offsets.hour[0]], 0));
-    } else if (second >= offsets.minute[0] && second <= offsets.minute[1]) {
-      ops.push(secondDesc(minuteBits[second - offsets.minute[0]], 0));
+    else if (
+      second >= secondOffsets.hour[0] &&
+      second <= secondOffsets.hour[1]
+    ) {
+      ops.push(secondDesc(hourBits[second - secondOffsets.hour[0]], 0));
+    } else if (
+      second >= secondOffsets.minute[0] &&
+      second <= secondOffsets.minute[1]
+    ) {
+      ops.push(secondDesc(minuteBits[second - secondOffsets.minute[0]], 0));
     }
     // Marker
-    else if (second === offsets.summerTimeWarning[0]) {
+    else if (second === secondOffsets.summerTimeWarning[0]) {
       ops.push(secondDesc(1, frame.summerTimeWarning.val ? 1 : 0));
-    } else if (second === offsets.yearParity[0]) {
+    } else if (second === secondOffsets.yearParity[0]) {
       ops.push(secondDesc(1, yearParity));
-    } else if (second === offsets.dayParity[0]) {
+    } else if (second === secondOffsets.dayParity[0]) {
       ops.push(secondDesc(1, dayParity));
-    } else if (second === offsets.dayOfWeekParity[0]) {
+    } else if (second === secondOffsets.dayOfWeekParity[0]) {
       ops.push(secondDesc(1, dayOfWeekParity));
-    } else if (second === offsets.timeParity[0]) {
+    } else if (second === secondOffsets.timeParity[0]) {
       ops.push(secondDesc(1, timeParity));
-    } else if (second === offsets.summerTime[0]) {
+    } else if (second === secondOffsets.summerTime[0]) {
       ops.push(secondDesc(1, frame.summerTime.val ? 1 : 0));
     } else {
       ops.push(secondDesc(0, 0));

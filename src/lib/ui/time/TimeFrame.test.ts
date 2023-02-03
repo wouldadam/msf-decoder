@@ -1,5 +1,6 @@
 import { render } from "@testing-library/svelte";
-import { CreateTimeFrame, DayOfWeek, ValueState } from "src/lib/processing/msf";
+import { ValueState } from "src/lib/processing/FrameValue";
+import { CreateTimeFrame, DayOfWeek } from "src/lib/processing/TimeFrame";
 import { expect, test } from "vitest";
 import TimeFrame from "./TimeFrame.svelte";
 

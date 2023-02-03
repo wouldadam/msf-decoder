@@ -1,4 +1,4 @@
-import { ValueState, type FrameValue } from "../../processing/msf";
+import { ValueState, type FrameValue } from "../../processing/FrameValue";
 import FrameValueComp from "./FrameValue.svelte";
 
 export default {

@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import { CreateTimeFrame, type TimeFrame } from "./processing/msf";
+import { CreateTimeFrame, type TimeFrame } from "./processing/TimeFrame";
 import type { MSFMsg } from "./processing/worklets/MSFNode";
 
 export interface TimeStore {

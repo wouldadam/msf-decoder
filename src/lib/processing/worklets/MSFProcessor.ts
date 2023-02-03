@@ -1,13 +1,12 @@
+import { minuteSegment } from "../constants";
+import { parseSecond } from "../parse";
+import { RingBuffer } from "../RingBuffer";
+import { CreateTimeFrame, type TimeFrame } from "../TimeFrame";
 import {
-  CreateTimeFrame,
+  areFixedBitsValid,
   isMinuteSegment,
   isSecondSegment,
-  minuteSegment,
-  parseSecond,
-  validateFixedBits,
-  type TimeFrame,
-} from "../msf";
-import { RingBuffer } from "../RingBuffer";
+} from "../validate";
 import type {
   InvalidMark,
   MinuteMark,
@@ -246,7 +245,7 @@ export class MSFProcessor extends AudioWorkletProcessor {
 
   // Parses the start of the symbol ring as if it is a second
   private parseSecond() {
-    if (!validateFixedBits(this.symbolRing, this.currentSecond)) {
+    if (!areFixedBitsValid(this.symbolRing, this.currentSecond)) {
       this.invalidSegment("Invalid fixed bits.", first10(this.symbolRing));
       return;
     }

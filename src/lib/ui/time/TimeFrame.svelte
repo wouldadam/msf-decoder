@@ -1,10 +1,9 @@
 <script lang="ts">
   import {
-    DayOfWeek,
     ValueState,
     type FrameValue as FrameValueObj,
-    type TimeFrame,
-  } from "../../processing/msf";
+  } from "../../processing/FrameValue";
+  import { DayOfWeek, type TimeFrame } from "../../processing/TimeFrame";
   import FrameValue from "./FrameValue.svelte";
 
   export let frame: TimeFrame;
