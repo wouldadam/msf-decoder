@@ -58,15 +58,15 @@
     waterfallCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
     carrierCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-    draw(lastDrawTime + frameRateMs);
+    draw(lastDrawTime, true);
   }
 
   /** Draw the waterfall onto the canvas. */
-  function draw(time: DOMHighResTimeStamp) {
+  function draw(time: DOMHighResTimeStamp, forceDraw: boolean = false) {
     frame = requestAnimationFrame(draw);
 
     // Limit how often we redraw
-    if (time - lastDrawTime < frameRateMs) {
+    if (!forceDraw && time - lastDrawTime < frameRateMs) {
       return;
     }
     lastDrawTime = time;
