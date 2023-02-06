@@ -15,14 +15,14 @@
       Frames
       <div class="tabs tabs-boxed pb-0">
         <button
-          class="tab tab-xs"
+          class="tab tab-xs text-opacity-80"
           class:tab-active={!isCurrent}
           on:click={() => (isCurrent = false)}
         >
           Previous
         </button>
         <button
-          class="tab tab-xs"
+          class="tab tab-xs text-opacity-80"
           class:tab-active={isCurrent}
           on:click={() => (isCurrent = true)}
         >

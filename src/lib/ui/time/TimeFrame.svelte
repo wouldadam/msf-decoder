@@ -97,7 +97,7 @@
         class="tooltip tooltip-bottom basis-1/3 flex flex-row py-1 gap-4 justify-around"
         data-tip={flag.desc}
       >
-        <span class="flex whitespace-nowrap items-center opacity-60"
+        <span class="flex whitespace-nowrap items-center opacity-90"
           >{flag.title}</span
         >
         <div class="flex items-center text-2xl font-extrabold">
