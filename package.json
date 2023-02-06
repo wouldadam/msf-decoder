@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "repository": "git@github.com:wouldadam/msf-decoder.git",
   "author": "Adam Wood <contact@adamwood.org>",
-  "license": "UNLICENCED",
+  "license": "BSD-3-Clause",
   "private": true,
   "type": "module",
   "scripts": {
