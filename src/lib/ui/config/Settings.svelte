@@ -51,6 +51,7 @@
             class="btn btn-sm p-2 pl-3 pr-3 tooltip tooltip-bottom normal-case"
             class:btn-info={$displayMode === view.mode}
             on:click={() => ($displayMode = view.mode)}
+            aria-label={view.tip}
             data-tip={view.tip}
           >
             <svelte:component this={view.icon} />
@@ -58,7 +59,11 @@
         {/each}
       </div>
 
-      <select class="select select-sm grow" data-choose-theme>
+      <select
+        class="select select-sm grow"
+        aria-label="Theme select"
+        data-choose-theme
+      >
         <option value="default">Default</option>
 
         <optgroup label="Light">

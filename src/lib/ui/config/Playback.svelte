@@ -119,6 +119,7 @@
         <button
           class="btn btn-sm p-2 pl-3 pr-3 tooltip tooltip-bottom normal-case"
           on:click={() => toggleOnOffState(audio)}
+          aria-label={$audio === "on" ? "Mute" : "Unmute"}
           data-testid="audio-toggle"
         >
           <label
@@ -146,6 +147,7 @@
           class="w-full btn btn-sm btn-success"
           class:btn-error={$playback === "play"}
           on:click={togglePlayback}
+          aria-label={$playback === "play" ? "Pause" : "Play"}
           data-testid="playback-toggle"
         >
           <label
