@@ -39,7 +39,7 @@
   <div
     class="w-full h-full min-h-full flex flex-col lg:h-auto lg:flex-row gap-4"
   >
-    <div class="flex flex-col gap-y-4 basis-2/3">
+    <div class="flex flex-col gap-y-4 basis-2/3 order-2 lg:order-1">
       <div class="min-h-[10em] basis-1/6">
         <Scan />
       </div>
@@ -53,7 +53,7 @@
       </div>
     </div>
 
-    <div class="flex flex-col gap-y-4 basis-1/3">
+    <div class="flex flex-col gap-y-4 basis-1/3 order-1 lg:order-2">
       <div class="shrink">
         <Playback />
       </div>
