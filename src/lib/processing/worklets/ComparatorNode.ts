@@ -1,19 +1,13 @@
 const comparatorProcessorName = "comparator-processor";
-
-export interface ComparatorOptions {
-  /// Should high or low samples be considered a 1.
-  polarity: "positive" | "negative";
-
-  /// Values over the threshold will be considered on.
-  threshold: number;
-}
+export const negativePolarityFlag = 0;
+export const positivePolarityFlag = 1;
 
 /**
  * A comparator node only turns a single channel into 0/1's based on
  * a dynamically changing threshold.
  */
 export class ComparatorNode extends AudioWorkletNode {
-  constructor(context: BaseAudioContext, options: ComparatorOptions) {
+  constructor(context: BaseAudioContext) {
     super(context, comparatorProcessorName, {
       numberOfInputs: 1,
       numberOfOutputs: 1,
@@ -21,7 +15,6 @@ export class ComparatorNode extends AudioWorkletNode {
       channelCountMode: "explicit",
       channelInterpretation: "discrete",
       outputChannelCount: [1],
-      processorOptions: options,
     });
   }
 }

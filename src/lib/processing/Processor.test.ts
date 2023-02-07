@@ -3,6 +3,7 @@ import { test } from "vitest";
 import type { DisplayMode, OnOffState, PlaybackState } from "../config";
 import { Processor } from "./Processor";
 import { CreateTimeFrame } from "./TimeFrame";
+import { negativePolarityFlag } from "./worklets/ComparatorNode";
 
 function createProcessor() {
   const audioSourceStore = writable(null);
@@ -15,6 +16,10 @@ function createProcessor() {
     qValue: 1,
   });
   const rmsConfigStore = writable({ alpha: 0.15 });
+  const comparatorStore = writable({
+    polarity: negativePolarityFlag as typeof negativePolarityFlag,
+    threshold: 0.5,
+  });
   const analyserConfigStore = writable({
     minDecibels: -100,
     maxDecibels: 0,
@@ -37,6 +42,7 @@ function createProcessor() {
     displayModeStore,
     filterConfigStore,
     rmsConfigStore,
+    comparatorStore,
     analyserConfigStore,
     timeStore,
     eventStore

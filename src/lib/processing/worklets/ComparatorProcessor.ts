@@ -1,49 +1,47 @@
-import type { ComparatorOptions } from "./ComparatorNode";
-
 const comparatorProcessorName = "comparator-processor";
-
-interface ComparatorProcessorOptions extends AudioWorkletNodeOptions {
-  processorOptions: ComparatorOptions;
-}
+export const negativePolarityFlag = 0;
+export const positivePolarityFlag = 1;
 
 /**
  * Turns audio samples into zeros and ones based on a threshold.
  */
 export class ComparatorProcessor extends AudioWorkletProcessor {
-  private on = 1;
-  private off = 0;
-
-  constructor(private options: ComparatorProcessorOptions) {
+  constructor() {
     super();
-
-    if (this.options.processorOptions.polarity === "positive") {
-      this.on = 1;
-      this.off = 0;
-    } else {
-      this.on = 0;
-      this.off = 1;
-    }
   }
 
   process(
     inputs: Float32Array[][],
     outputs: Float32Array[][],
-    _parameters: Record<string, Float32Array>
+    parameters: Record<string, Float32Array>
   ): boolean {
     const input = inputs[0][0];
     const output = outputs[0][0];
 
+    const threshold = parameters["threshold"][0];
+    const polarity = parameters["polarity"][0];
+
     for (let sampleIdx = 0; sampleIdx < input.length; ++sampleIdx) {
       let sample = input[sampleIdx];
-      let bit = this.off;
+      let bit = 0;
 
-      if (sample > this.options.processorOptions.threshold) {
-        bit = this.on;
+      if (
+        (polarity === positivePolarityFlag && sample > threshold) ||
+        (polarity === negativePolarityFlag && sample < threshold)
+      ) {
+        bit = 1;
       }
 
       output[sampleIdx] = bit;
     }
     return true;
+  }
+
+  static get parameterDescriptors() {
+    return [
+      { name: "threshold", defaultValue: 0.05, minValue: 0, maxValue: 1 },
+      { name: "polarity", defaultValue: 0, minValue: 0, maxValue: 1 },
+    ];
   }
 }
 

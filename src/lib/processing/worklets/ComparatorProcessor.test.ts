@@ -1,6 +1,10 @@
 import { test } from "vitest";
 import { ComparatorNode } from "./ComparatorNode";
-import { ComparatorProcessor } from "./ComparatorProcessor";
+import {
+  ComparatorProcessor,
+  negativePolarityFlag,
+  positivePolarityFlag,
+} from "./ComparatorProcessor";
 
 const frameSize = 128;
 
@@ -13,38 +17,36 @@ test.each([["positive"], ["negative"]])(
     const on = polarity == "positive" ? 1 : 0;
     const off = polarity == "positive" ? 0 : 1;
 
-    const processor = new ComparatorProcessor({
-      processorOptions: {
-        polarity,
-        threshold: 0,
-      },
-    });
+    const processor = new ComparatorProcessor();
 
     const posInputs = [[new Float32Array(frameSize).fill(50)]];
     const negInputs = [[new Float32Array(frameSize).fill(-50)]];
     const outputs = [[new Float32Array(frameSize)]];
+    const params = {
+      threshold: new Float32Array([0]),
+      polarity: new Float32Array([
+        polarity === "positive" ? positivePolarityFlag : negativePolarityFlag,
+      ]),
+    };
 
     for (let rep = 0; rep < framesPerSecond * thresholdWindowSec; ++rep) {
-      processor.process(posInputs, outputs, {});
-      processor.process(negInputs, outputs, {});
+      processor.process(posInputs, outputs, params);
+      processor.process(negInputs, outputs, params);
     }
 
     global.currentTime = thresholdWindowSec;
 
     for (let rep = 0; rep < framesPerSecond * thresholdWindowSec; ++rep) {
-      processor.process(posInputs, outputs, {});
+      processor.process(posInputs, outputs, params);
       expect(outputs[0][0]).toContain(new Float32Array(frameSize).fill(on));
 
-      processor.process(negInputs, outputs, {});
+      processor.process(negInputs, outputs, params);
       expect(outputs[0][0]).toContain(new Float32Array(frameSize).fill(off));
     }
   }
 );
 
 test("can create node", () => {
-  const node = new ComparatorNode(jest.fn() as any, {
-    polarity: "negative",
-    threshold: 1,
-  });
+  const node = new ComparatorNode(jest.fn() as any);
   expect(node).not.toBeNull();
 });

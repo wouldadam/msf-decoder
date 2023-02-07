@@ -6,6 +6,7 @@ import {
 } from "svelte/store";
 import type {
   AnalyserConfig,
+  ComparatorConfig,
   DisplayMode,
   FilterConfig,
   OnOffState,
@@ -33,6 +34,7 @@ export class Processor {
 
   private unsubFilterConfig: Unsubscriber;
   private unsubRMSConfig: Unsubscriber;
+  private unsubComparatorConfig: Unsubscriber;
   private unsubAnalyserConfig: Unsubscriber;
 
   private stream?: MediaStream;
@@ -56,6 +58,7 @@ export class Processor {
     private displayModeStore: Readable<DisplayMode>,
     private filterConfigStore: Readable<FilterConfig>,
     private rmsConfigStore: Readable<RMSConfig>,
+    private comparatorConfigStore: Readable<ComparatorConfig>,
     private analyserConfigStore: Readable<AnalyserConfig>,
     private timeStore: Writable<TimeStore>,
     private eventStore: Writable<EventStore>
@@ -76,6 +79,9 @@ export class Processor {
       this.updateFilterParams
     );
     this.unsubRMSConfig = rmsConfigStore.subscribe(this.updateRMSParams);
+    this.unsubComparatorConfig = comparatorConfigStore.subscribe(
+      this.updateComparatorParams
+    );
     this.unsubAnalyserConfig = analyserConfigStore.subscribe(
       this.updateAnalyserParams
     );
@@ -91,6 +97,7 @@ export class Processor {
 
     this.unsubFilterConfig();
     this.unsubRMSConfig();
+    this.unsubComparatorConfig();
     this.unsubAnalyserConfig();
 
     this.stop();
@@ -177,10 +184,8 @@ export class Processor {
     this.updateRMSParams(get(this.rmsConfigStore));
     this.filter.connect(this.rms);
 
-    this.comparator = new ComparatorNode(this.context, {
-      polarity: "negative",
-      threshold: 0.05,
-    });
+    this.comparator = new ComparatorNode(this.context);
+    this.updateComparatorParams(get(this.comparatorConfigStore));
     this.rms.connect(this.comparator);
 
     this.msf = new MSFNode(
@@ -228,6 +233,16 @@ export class Processor {
     }
   };
 
+  private updateComparatorParams = (config: ComparatorConfig) => {
+    if (this.comparator) {
+      this.comparator.parameters
+        .get("threshold")
+        .setValueAtTime(config.threshold, this.context.currentTime);
+      this.comparator.parameters
+        .get("polarity")
+        .setValueAtTime(config.polarity, this.context.currentTime);
+    }
+  };
 
   private updateAnalyserParams = (config: AnalyserConfig) => {
     if (this.analyser) {

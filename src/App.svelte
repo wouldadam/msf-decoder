@@ -5,6 +5,7 @@
     audio,
     audioSource,
     carrierFrequencyHz,
+    comparatorConfig,
     displayMode,
     filterConfig,
     playback,
@@ -29,6 +30,7 @@
     displayMode,
     filterConfig,
     rmsConfig,
+    comparatorConfig,
     analyserConfig,
     timeStore,
     eventStore

@@ -7,6 +7,7 @@ test.each([
   ["Analyser", "FFT size"],
   ["Filter", "Q-value"],
   ["RMS", "Alpha"],
+  ["Comp", "Polarity"],
 ])("can show %s settings", async (label: string, expected: string) => {
     const user = userEvent.setup();
     const result = render(AdvancedSettings);

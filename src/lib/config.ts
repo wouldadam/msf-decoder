@@ -1,5 +1,9 @@
 import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
+import {
+  negativePolarityFlag,
+  type positivePolarityFlag,
+} from "./processing/worklets/ComparatorNode";
 
 /**
  * The MSF carrier frequency in the input audio.
@@ -52,6 +56,19 @@ export interface RMSConfig {
 
 export const rmsConfig: Writable<RMSConfig> = writable({
   alpha: 0.15,
+});
+
+/// Configuration for the comparator stage of processing
+export interface ComparatorConfig {
+  /// Should high or low samples be considered a 1.
+  polarity: typeof positivePolarityFlag | typeof negativePolarityFlag;
+
+  /// Values over the threshold will be considered on.
+  threshold: number;
+}
+export const comparatorConfig: Writable<ComparatorConfig> = writable({
+  polarity: negativePolarityFlag,
+  threshold: 0.05,
 });
 
 /// Configuration for the analyser stage of processing
