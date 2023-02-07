@@ -1,8 +1,7 @@
 <script lang="ts">
   import { timeStore } from "../../time";
+  import { frameView } from "../state";
   import TimeFrame from "./TimeFrame.svelte";
-
-  let isCurrent = true;
 </script>
 
 <!--
@@ -16,22 +15,22 @@
       <div class="tabs tabs-boxed pb-0">
         <button
           class="tab tab-xs text-opacity-80"
-          class:tab-active={!isCurrent}
-          on:click={() => (isCurrent = false)}
+          class:tab-active={$frameView == "previous"}
+          on:click={() => ($frameView = "previous")}
         >
           Previous
         </button>
         <button
           class="tab tab-xs text-opacity-80"
-          class:tab-active={isCurrent}
-          on:click={() => (isCurrent = true)}
+          class:tab-active={$frameView == "current"}
+          on:click={() => ($frameView = "current")}
         >
           Current
         </button>
       </div>
     </h2>
 
-    {#if isCurrent}
+    {#if $frameView == "current"}
       <TimeFrame frame={$timeStore.currentFrame} second={$timeStore.second} />
     {:else}
       <TimeFrame frame={$timeStore.previousFrame} />
