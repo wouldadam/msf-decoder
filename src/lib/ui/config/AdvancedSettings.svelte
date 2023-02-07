@@ -45,7 +45,7 @@
           >FFT size</label
         >
         <div
-          class="tooltip w-full"
+          class="tooltip lg:tooltip-left w-full"
           data-tip="Window size in samples that is used when performing an FFT."
         >
           <select
@@ -65,7 +65,7 @@
           >Smoothing time constant</label
         >
         <div
-          class="tooltip w-full"
+          class="tooltip lg:tooltip-left w-full"
           data-tip="Averaging constant with the last analysis frame. Basically an average between the current buffer and the last buffer."
         >
           <input
@@ -84,7 +84,7 @@
       <div>
         <label class="label label-text-alt" for="analyser-min-db">Min</label>
         <div
-          class="tooltip"
+          class="tooltip lg:tooltip-left"
           data-tip="Min power value in the scaling range for the FFT."
         >
           <div class="input-group">
@@ -103,7 +103,7 @@
       <div>
         <label class="label label-text-alt" for="analyser-max-db">Max</label>
         <div
-          class="tooltip"
+          class="tooltip lg:tooltip-left"
           data-tip="Max power value in the scaling range for the FFT."
         >
           <div class="input-group">
