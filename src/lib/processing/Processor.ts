@@ -7,6 +7,7 @@ import {
 import type {
   AnalyserConfig,
   DisplayMode,
+  FilterConfig,
   OnOffState,
   PlaybackState,
 } from "../config";
@@ -29,6 +30,7 @@ export class Processor {
   private unsubAudio: Unsubscriber;
   private unsubDisplayMode: Unsubscriber;
 
+  private unsubFilterConfig: Unsubscriber;
   private unsubAnalyserConfig: Unsubscriber;
 
   private stream?: MediaStream;
@@ -50,6 +52,7 @@ export class Processor {
     private playbackStore: Readable<PlaybackState>,
     private audioStore: Readable<OnOffState>,
     private displayModeStore: Readable<DisplayMode>,
+    private filterConfigStore: Readable<FilterConfig>,
     private analyserConfigStore: Readable<AnalyserConfig>,
     private timeStore: Writable<TimeStore>,
     private eventStore: Writable<EventStore>
@@ -66,6 +69,9 @@ export class Processor {
       this.onDisplayModeChange
     );
 
+    this.unsubFilterConfig = filterConfigStore.subscribe(
+      this.updateFilterParams
+    );
     this.unsubAnalyserConfig = analyserConfigStore.subscribe(
       this.updateAnalyserParams
     );
@@ -79,6 +85,7 @@ export class Processor {
     this.unsubAudio();
     this.unsubDisplayMode();
 
+    this.unsubFilterConfig();
     this.unsubAnalyserConfig();
 
     this.stop();
@@ -154,12 +161,11 @@ export class Processor {
     }
 
     this.filter = this.context.createBiquadFilter();
-    this.filter.type = "bandpass";
-    this.filter.Q.setValueAtTime(1, this.context.currentTime);
     this.filter.frequency.setValueAtTime(
       get(this.carrierFrequencyStore),
       this.context.currentTime
     );
+    this.updateFilterParams(get(this.filterConfigStore));
     this.source.connect(this.filter);
 
     this.rms = new RMSNode(this.context, {
@@ -202,6 +208,13 @@ export class Processor {
         break;
     }
   }
+
+  private updateFilterParams = (config: FilterConfig) => {
+    if (this.filter) {
+      this.filter.type = config.type;
+      this.filter.Q.setValueAtTime(config.qValue, this.context.currentTime);
+    }
+  };
 
 
   private updateAnalyserParams = (config: AnalyserConfig) => {

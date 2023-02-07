@@ -1,8 +1,14 @@
 <script lang="ts">
-  import { analyserConfig } from "../../config";
+  import {
+    analyserConfig,
+    filterConfig,
+  } from "../../config";
   import { advancedSettingsView } from "../state";
 
-  const stages = [["analyser", "Analyser"]] as const;
+  const stages = [
+    ["analyser", "Analyser"],
+    ["filter", "Filter"],
+  ] as const;
 </script>
 
 <!--
@@ -101,6 +107,38 @@
             <span>dB</span>
           </div>
         </div>
+      </div>
+    </div>
+  {:else if $advancedSettingsView == "filter"}
+    <div class="flex flex-row gap-2">
+      <div class="basis-1/2">
+        <label class="label label-text-alt" for="filter-type">Type</label>
+        <select
+          class="select select-sm w-full"
+          id="filter-type"
+          bind:value={$filterConfig.type}
+        >
+          <option value="bandpass">Bandpass</option>
+          <option value="lowpass">Lowpass</option>
+          <option value="highpass">Highpass</option>
+          <option value="allpass">Allpass</option>
+          <option value="lowshelf">Lowshelf</option>
+          <option value="highshelf">Highshelf</option>
+          <option value="notch">Notch</option>
+          <option value="peaking">Peaking</option>
+        </select>
+      </div>
+
+      <div class="basis-1/2">
+        <label class="label label-text-alt" for="filter-q-value">Q-value</label>
+        <input
+          class="input input-sm w-full"
+          id="filter-q-value"
+          type="number"
+          min="0"
+          max="1"
+          bind:value={$filterConfig.qValue}
+        />
       </div>
     </div>
   {/if}

@@ -6,6 +6,7 @@
     audioSource,
     carrierFrequencyHz,
     displayMode,
+    filterConfig,
     playback,
   } from "./lib/config";
   import { defaultProcessorKey, Processor } from "./lib/processing/Processor";
@@ -25,6 +26,7 @@
     playback,
     audio,
     displayMode,
+    filterConfig,
     analyserConfig,
     timeStore,
     eventStore

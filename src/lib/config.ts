@@ -34,6 +34,16 @@ export type DisplayMode = "raw" | "filter" | "rms" | "comparator";
  */
 export const displayMode: Writable<DisplayMode> = writable("raw");
 
+/// Configuration for the filter stage of processing
+export interface FilterConfig {
+  type: BiquadFilterType;
+  qValue: number;
+}
+export const filterConfig: Writable<FilterConfig> = writable({
+  type: "bandpass",
+  qValue: 1,
+});
+
 /// Configuration for the analyser stage of processing
 export interface AnalyserConfig {
   minDecibels: number;

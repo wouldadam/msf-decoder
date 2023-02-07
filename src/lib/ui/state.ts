@@ -7,4 +7,5 @@ export const frameView: Writable<"previous" | "current"> = writable("current");
 export const settingsView: Writable<"basic" | "advanced"> = writable("basic");
 
 /// The state of the advanced settings tabs
-export const advancedSettingsView: Writable<"analyser"> = writable("analyser");
+export const advancedSettingsView: Writable<"analyser" | "filter"> =
+  writable("analyser");

@@ -3,9 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import AdvancedSettings from "./AdvancedSettings.svelte";
 
-test.each([["Analyser", "FFT size"]])(
-  "can show %s settings",
-  async (label: string, expected: string) => {
+test.each([
+  ["Analyser", "FFT size"],
+  ["Filter", "Q-value"],
+])("can show %s settings", async (label: string, expected: string) => {
     const user = userEvent.setup();
     const result = render(AdvancedSettings);
 
@@ -13,5 +14,4 @@ test.each([["Analyser", "FFT size"]])(
 
     await user.click(tabBtn);
     expect(await result.findByText(expected)).not.toBeNull();
-  }
-);
+});

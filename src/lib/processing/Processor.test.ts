@@ -4,12 +4,22 @@ import type { DisplayMode, OnOffState, PlaybackState } from "../config";
 import { Processor } from "./Processor";
 import { CreateTimeFrame } from "./TimeFrame";
 
-test("can stop/start the Processor", () => {
+function createProcessor() {
   const audioSourceStore = writable(null);
   const carrierFrequencyStore = writable(100);
   const playbackStore = writable("play" as PlaybackState);
   const audioStore = writable("off" as OnOffState);
   const displayModeStore = writable("raw" as DisplayMode);
+  const filterConfigStore = writable({
+    type: "bandpass" as BiquadFilterType,
+    qValue: 1,
+  });
+  const analyserConfigStore = writable({
+    minDecibels: -100,
+    maxDecibels: 0,
+    fftSize: 1024,
+    smoothingTimeConstant: 0,
+  });
   const timeStore = writable({
     currentTime: CreateTimeFrame(),
     currentFrame: CreateTimeFrame(),
@@ -24,9 +34,18 @@ test("can stop/start the Processor", () => {
     playbackStore,
     audioStore,
     displayModeStore,
+    filterConfigStore,
+    analyserConfigStore,
     timeStore,
     eventStore
   );
+
+  return [processor, playbackStore, audioStore, displayModeStore] as const;
+}
+
+test("can stop/start the Processor", () => {
+  const [processor, playbackStore, audioStore, displayModeStore] =
+    createProcessor();
 
   processor.start();
   processor.stop();
@@ -36,28 +55,8 @@ test("can stop/start the Processor", () => {
 });
 
 test("can handle store changes", () => {
-  const audioSourceStore = writable(null);
-  const carrierFrequencyStore = writable(100);
-  const playbackStore = writable("play" as PlaybackState);
-  const audioStore = writable("off" as OnOffState);
-  const displayModeStore = writable("raw" as DisplayMode);
-  const timeStore = writable({
-    currentTime: CreateTimeFrame(),
-    currentFrame: CreateTimeFrame(),
-    previousFrame: CreateTimeFrame(),
-    second: 0,
-  });
-  const eventStore = writable({ events: [] });
-
-  const processor = new Processor(
-    audioSourceStore,
-    carrierFrequencyStore,
-    playbackStore,
-    audioStore,
-    displayModeStore,
-    timeStore,
-    eventStore
-  );
+  const [processor, playbackStore, audioStore, displayModeStore] =
+    createProcessor();
 
   processor.start();
 
