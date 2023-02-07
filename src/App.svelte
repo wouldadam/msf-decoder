@@ -8,6 +8,7 @@
     comparatorConfig,
     displayMode,
     filterConfig,
+    msfConfig,
     playback,
     rmsConfig,
   } from "./lib/config";
@@ -31,6 +32,7 @@
     filterConfig,
     rmsConfig,
     comparatorConfig,
+    msfConfig,
     analyserConfig,
     timeStore,
     eventStore

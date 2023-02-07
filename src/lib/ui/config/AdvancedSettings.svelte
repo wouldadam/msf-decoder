@@ -1,15 +1,23 @@
 <script lang="ts">
   import {
     analyserConfig,
+    comparatorConfig,
     filterConfig,
+    msfConfig,
     rmsConfig,
   } from "../../config";
+  import {
+    negativePolarityFlag,
+    positivePolarityFlag,
+  } from "../../processing/worklets/ComparatorNode";
   import { advancedSettingsView } from "../state";
 
   const stages = [
     ["analyser", "Analyser"],
     ["filter", "Filter"],
     ["rms", "RMS"],
+    ["comp", "Comp"],
+    ["decode", "Decode"],
   ] as const;
 </script>
 
@@ -154,6 +162,48 @@
           min="0"
           max="1"
           bind:value={$rmsConfig.alpha}
+        />
+      </div>
+    </div>
+  {:else if $advancedSettingsView == "comp"}
+    <div class="flex flex-row gap-2">
+      <div class="basis-1/2">
+        <label class="label label-text-alt" for="comp-polarity">Polarity</label>
+        <select
+          class="select select-sm w-full"
+          id="comp-polarity"
+          bind:value={$comparatorConfig.polarity}
+        >
+          <option value={positivePolarityFlag}>Positive</option>
+          <option value={negativePolarityFlag}>Negative</option>
+        </select>
+      </div>
+
+      <div class="basis-1/2">
+        <label class="label label-text-alt" for="comp-threshold">Q-value</label>
+        <input
+          class="input input-sm w-full"
+          id="comp-threshold"
+          type="number"
+          min="0"
+          max="1"
+          bind:value={$comparatorConfig.threshold}
+        />
+      </div>
+    </div>
+  {:else if $advancedSettingsView == "decode"}
+    <div class="flex flex-col gap-2">
+      <div>
+        <label class="label label-text-alt" for="decode-symbol-rate"
+          >Symbol rate</label
+        >
+        <input
+          class="input input-sm w-full"
+          id="decode-symbol-rate"
+          type="number"
+          min="0"
+          max="10"
+          bind:value={$msfConfig.symbolRate}
         />
       </div>
     </div>

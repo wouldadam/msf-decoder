@@ -7,21 +7,11 @@ import {
   isMinuteSegment,
   isSecondSegment,
 } from "../validate";
-import type {
-  InvalidMark,
-  MinuteMark,
-  MSFOptions,
-  SecondMark,
-  SyncMark,
-} from "./MSFNode";
+import type { InvalidMark, MinuteMark, SecondMark, SyncMark } from "./MSFNode";
 
 const msfProcessorName = "msf-processor";
 const symbolsPerSegment = minuteSegment.length;
 const maxSegments = 5;
-
-interface MSFProcessorOptions extends AudioWorkletNodeOptions {
-  processorOptions: MSFOptions;
-}
 
 /// Put the first 10 elements (or max) in a string
 function first10(buffer: RingBuffer) {
@@ -39,6 +29,7 @@ function first10(buffer: RingBuffer) {
  * demod and time synchronization.
  */
 export class MSFProcessor extends AudioWorkletProcessor {
+  private symbolRate: number;
   private samplesPerSymbol: number;
   private samplesPerSegment: number;
 
@@ -53,28 +44,34 @@ export class MSFProcessor extends AudioWorkletProcessor {
 
   private currentFrame: TimeFrame; /// The currently decoded TimeFrame
 
-  constructor(options: MSFProcessorOptions) {
+  constructor() {
     super();
-
-    this.samplesPerSymbol = sampleRate / options.processorOptions.symbolRate;
-    this.samplesPerSegment = this.samplesPerSymbol * symbolsPerSegment;
-
-    this.inputRing = new RingBuffer(maxSegments * this.samplesPerSegment);
-    this.syncBuffer = new Float32Array(this.samplesPerSegment);
-    this.syncedRing = new RingBuffer(maxSegments * this.samplesPerSegment);
-    this.demodBuffer = new Float32Array(this.samplesPerSymbol); // Always take 1 full symbol
-    this.symbolRing = new RingBuffer((maxSegments + 1) * symbolsPerSegment);
-
-    this.isFrameStarted = false;
-    this.currentSecond = -1;
-    this.currentFrame = CreateTimeFrame();
+    this.symbolRate = -1;
   }
 
   process(
     inputs: Float32Array[][],
     _outputs: Float32Array[][],
-    _parameters: Record<string, Float32Array>
+    parameters: Record<string, Float32Array>
   ): boolean {
+    // If the symbol rate changes start from scratch
+    const symbolRate = parameters["symbolRate"][0];
+    if (this.symbolRate !== symbolRate) {
+      this.symbolRate = symbolRate;
+      this.samplesPerSymbol = sampleRate / symbolRate;
+      this.samplesPerSegment = this.samplesPerSymbol * symbolsPerSegment;
+
+      this.inputRing = new RingBuffer(maxSegments * this.samplesPerSegment);
+      this.syncBuffer = new Float32Array(this.samplesPerSegment);
+      this.syncedRing = new RingBuffer(maxSegments * this.samplesPerSegment);
+      this.demodBuffer = new Float32Array(this.samplesPerSymbol); // Always take 1 full symbol
+      this.symbolRing = new RingBuffer((maxSegments + 1) * symbolsPerSegment);
+
+      this.isFrameStarted = false;
+      this.currentSecond = -1;
+      this.currentFrame = CreateTimeFrame();
+    }
+
     // Store the input for later processing
     this.storeInput(inputs[0][0]);
 
@@ -276,6 +273,12 @@ export class MSFProcessor extends AudioWorkletProcessor {
     if (this.currentSecond >= 59) {
       this.endFrame();
     }
+  }
+
+  static get parameterDescriptors() {
+    return [
+      { name: "symbolRate", defaultValue: 10, minValue: 1, maxValue: 10000 },
+    ];
   }
 }
 

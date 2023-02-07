@@ -20,6 +20,7 @@ function createProcessor() {
     polarity: negativePolarityFlag as typeof negativePolarityFlag,
     threshold: 0.5,
   });
+  const msfConfigStore = writable({ symbolRate: 10 });
   const analyserConfigStore = writable({
     minDecibels: -100,
     maxDecibels: 0,
@@ -43,6 +44,7 @@ function createProcessor() {
     filterConfigStore,
     rmsConfigStore,
     comparatorStore,
+    msfConfigStore,
     analyserConfigStore,
     timeStore,
     eventStore

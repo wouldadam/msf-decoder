@@ -5,10 +5,6 @@ import { CreateTimeFrame, type TimeFrame } from "../TimeFrame";
 
 const msfProcessorName = "msf-processor";
 
-export interface MSFOptions {
-  symbolRate: number;
-}
-
 /// A minute marker has been found
 export interface MinuteMark {
   msg: "minute";
@@ -81,7 +77,6 @@ export type MSFMsg = MinuteMark | SecondMark | InvalidMark | SyncMark;
 export class MSFNode extends AudioWorkletNode {
   constructor(
     context: BaseAudioContext,
-    options: MSFOptions,
     private timeStore: Writable<TimeStore>,
     private eventStore: Writable<EventStore>
   ) {
@@ -92,7 +87,6 @@ export class MSFNode extends AudioWorkletNode {
       channelCountMode: "explicit",
       channelInterpretation: "discrete",
       outputChannelCount: [],
-      processorOptions: options,
     });
 
     this.port.onmessage = this.onMessage;

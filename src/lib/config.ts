@@ -71,6 +71,14 @@ export const comparatorConfig: Writable<ComparatorConfig> = writable({
   threshold: 0.05,
 });
 
+/// Configuration for the MSF decode stage of processing
+export interface MSFConfig {
+  symbolRate: number;
+}
+export const msfConfig: Writable<MSFConfig> = writable({
+  symbolRate: 10,
+});
+
 /// Configuration for the analyser stage of processing
 export interface AnalyserConfig {
   minDecibels: number;

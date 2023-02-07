@@ -21,12 +21,7 @@ test("can handle minute mark", () => {
     second: 30,
   });
   const eventStore = writable({ events: [] });
-  const node = new MSFNode(
-    jest.fn() as any,
-    { symbolRate: 1 },
-    timeStore,
-    eventStore
-  );
+  const node = new MSFNode(jest.fn() as any, timeStore, eventStore);
 
   const ev: MessageEvent<MinuteMark> = {
     ...new Event(""),
@@ -62,12 +57,7 @@ test("can handle second mark", () => {
     second: 0,
   });
   const eventStore = writable({ events: [] });
-  const node = new MSFNode(
-    jest.fn() as any,
-    { symbolRate: 1 },
-    timeStore,
-    eventStore
-  );
+  const node = new MSFNode(jest.fn() as any, timeStore, eventStore);
 
   const ev: MessageEvent<SecondMark> = {
     ...new Event(""),
@@ -114,12 +104,7 @@ test("can handle invalid mark", () => {
     second: 30,
   });
   const eventStore = writable({ events: [] });
-  const node = new MSFNode(
-    jest.fn() as any,
-    { symbolRate: 1 },
-    timeStore,
-    eventStore
-  );
+  const node = new MSFNode(jest.fn() as any, timeStore, eventStore);
 
   const ev: MessageEvent<InvalidMark> = {
     ...new Event(""),

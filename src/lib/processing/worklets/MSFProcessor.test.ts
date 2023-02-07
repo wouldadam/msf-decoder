@@ -68,8 +68,14 @@ function createInput(segments: Array<InputDesc>): Float32Array {
 
 /// Feeds input samples to the given processor in audioBufferLength increments
 function feedProcessor(processor: MSFProcessor, input: Float32Array) {
+  const params = { symbolRate: new Float32Array([symbolRate]) };
+
   for (let idx = 0; idx < input.length; ) {
-    processor.process([[input.subarray(idx, idx + audioBufferLength)]], [], {});
+    processor.process(
+      [[input.subarray(idx, idx + audioBufferLength)]],
+      [],
+      params
+    );
     idx += audioBufferLength;
   }
 }
@@ -202,11 +208,7 @@ test.each([0, 0.25, 0.5, 0.75, 1, 60])(
     const samplesPerSymbol = sampleRate / symbolRate;
 
     // Create a processor
-    const processor = new MSFProcessor({
-      processorOptions: {
-        symbolRate,
-      },
-    });
+    const processor = new MSFProcessor();
 
     // Create each of the message segments to send
     const frame: TimeFrame = {
@@ -281,11 +283,7 @@ test.each([0, 0.25, 0.5, 0.75, 1, 60])(
 
 test("receiving a second segment outside a frame is invalid", () => {
   // Create a processor
-  const processor = new MSFProcessor({
-    processorOptions: {
-      symbolRate,
-    },
-  });
+  const processor = new MSFProcessor();
 
   // Create a lonely second segment
   const segments: Array<InputDesc> = [secondDesc(0, 1)];
@@ -310,11 +308,7 @@ test("receiving a invalid data within a frame is invalid", () => {
   const samplesPerSymbol = sampleRate / symbolRate;
 
   // Create a processor
-  const processor = new MSFProcessor({
-    processorOptions: {
-      symbolRate,
-    },
-  });
+  const processor = new MSFProcessor();
 
   // Create a minute start followed by just zeros
   const segments: Array<InputDesc> = [
@@ -347,11 +341,7 @@ test("receiving a invalid data within a frame is invalid", () => {
 
 test("receiving a invalid fixed bits is invalid", () => {
   // Create a processor
-  const processor = new MSFProcessor({
-    processorOptions: {
-      symbolRate,
-    },
-  });
+  const processor = new MSFProcessor();
 
   // Create a minute start followed by just zeros
   const frame: TimeFrame = {
@@ -395,11 +385,7 @@ test("receiving a invalid fixed bits is invalid", () => {
 
 test("receiving an invalid segment is invalid", () => {
   // Create a processor
-  const processor = new MSFProcessor({
-    processorOptions: {
-      symbolRate,
-    },
-  });
+  const processor = new MSFProcessor();
 
   // Create a minute start followed multiple set DUT 1 bits (invalid)
   const segments: Array<InputDesc> = [

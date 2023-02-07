@@ -8,12 +8,13 @@ test.each([
   ["Filter", "Q-value"],
   ["RMS", "Alpha"],
   ["Comp", "Polarity"],
+  ["Decode", "Symbol rate"],
 ])("can show %s settings", async (label: string, expected: string) => {
-    const user = userEvent.setup();
-    const result = render(AdvancedSettings);
+  const user = userEvent.setup();
+  const result = render(AdvancedSettings);
 
-    const tabBtn = result.getByText(label);
+  const tabBtn = result.getByText(label);
 
-    await user.click(tabBtn);
-    expect(await result.findByText(expected)).not.toBeNull();
+  await user.click(tabBtn);
+  expect(await result.findByText(expected)).not.toBeNull();
 });

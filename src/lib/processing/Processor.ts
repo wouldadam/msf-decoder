@@ -9,6 +9,7 @@ import type {
   ComparatorConfig,
   DisplayMode,
   FilterConfig,
+  MSFConfig,
   OnOffState,
   PlaybackState,
   RMSConfig,
@@ -35,6 +36,7 @@ export class Processor {
   private unsubFilterConfig: Unsubscriber;
   private unsubRMSConfig: Unsubscriber;
   private unsubComparatorConfig: Unsubscriber;
+  private unsubMSFConfig: Unsubscriber;
   private unsubAnalyserConfig: Unsubscriber;
 
   private stream?: MediaStream;
@@ -59,6 +61,7 @@ export class Processor {
     private filterConfigStore: Readable<FilterConfig>,
     private rmsConfigStore: Readable<RMSConfig>,
     private comparatorConfigStore: Readable<ComparatorConfig>,
+    private msfConfigStore: Readable<MSFConfig>,
     private analyserConfigStore: Readable<AnalyserConfig>,
     private timeStore: Writable<TimeStore>,
     private eventStore: Writable<EventStore>
@@ -82,6 +85,7 @@ export class Processor {
     this.unsubComparatorConfig = comparatorConfigStore.subscribe(
       this.updateComparatorParams
     );
+    this.unsubMSFConfig = msfConfigStore.subscribe(this.updateMSFParams);
     this.unsubAnalyserConfig = analyserConfigStore.subscribe(
       this.updateAnalyserParams
     );
@@ -98,6 +102,7 @@ export class Processor {
     this.unsubFilterConfig();
     this.unsubRMSConfig();
     this.unsubComparatorConfig();
+    this.unsubMSFConfig();
     this.unsubAnalyserConfig();
 
     this.stop();
@@ -188,14 +193,8 @@ export class Processor {
     this.updateComparatorParams(get(this.comparatorConfigStore));
     this.rms.connect(this.comparator);
 
-    this.msf = new MSFNode(
-      this.context,
-      {
-        symbolRate: 10,
-      },
-      this.timeStore,
-      this.eventStore
-    );
+    this.msf = new MSFNode(this.context, this.timeStore, this.eventStore);
+    this.updateMSFParams(get(this.msfConfigStore));
     this.comparator.connect(this.msf);
 
     this.analyser = this.context.createAnalyser();
@@ -241,6 +240,14 @@ export class Processor {
       this.comparator.parameters
         .get("polarity")
         .setValueAtTime(config.polarity, this.context.currentTime);
+    }
+  };
+
+  private updateMSFParams = (config: MSFConfig) => {
+    if (this.msf) {
+      this.msf.parameters
+        .get("symbolRate")
+        .setValueAtTime(config.symbolRate, this.context.currentTime);
     }
   };
 

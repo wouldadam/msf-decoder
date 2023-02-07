@@ -8,5 +8,5 @@ export const settingsView: Writable<"basic" | "advanced"> = writable("basic");
 
 /// The state of the advanced settings tabs
 export const advancedSettingsView: Writable<
-  "analyser" | "filter" | "rms" | "comp"
+  "analyser" | "filter" | "rms" | "comp" | "decode"
 > = writable("analyser");
