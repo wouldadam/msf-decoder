@@ -33,3 +33,18 @@ export type DisplayMode = "raw" | "filter" | "rms" | "comparator";
  * Indicates what data is shown in the configurable displays.
  */
 export const displayMode: Writable<DisplayMode> = writable("raw");
+
+/// Configuration for the analyser stage of processing
+export interface AnalyserConfig {
+  minDecibels: number;
+  maxDecibels: number;
+  fftSize: number;
+  smoothingTimeConstant: number;
+}
+
+export const analyserConfig: Writable<AnalyserConfig> = writable({
+  minDecibels: -150,
+  maxDecibels: 0,
+  fftSize: 4096,
+  smoothingTimeConstant: 0,
+});

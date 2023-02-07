@@ -38,7 +38,7 @@
     if (analyser) {
       const sliceWidth = width / analyser.frequencyBinCount;
 
-      if (!buffer) {
+      if (!buffer || buffer.length != analyser.frequencyBinCount) {
         buffer = new Uint8Array(analyser.frequencyBinCount);
       }
       analyser.getByteTimeDomainData(buffer);

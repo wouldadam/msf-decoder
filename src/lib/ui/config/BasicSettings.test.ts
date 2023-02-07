@@ -3,17 +3,17 @@ import userEvent from "@testing-library/user-event";
 import { get } from "svelte/store";
 import { expect, test } from "vitest";
 import { carrierFrequencyHz, displayMode } from "../../config";
-import Settings from "./Settings.svelte";
+import BasicSettings from "./BasicSettings.svelte";
 
 test("should show current carrier frequency", () => {
-  const result = render(Settings);
+  const result = render(BasicSettings);
 
   expect(result.getByRole("spinbutton")).toHaveValue(get(carrierFrequencyHz));
 });
 
 test("should set carrier frequency", async () => {
   const user = userEvent.setup();
-  const result = render(Settings);
+  const result = render(BasicSettings);
 
   const input = result.getByRole("spinbutton");
   await user.clear(input);
@@ -25,7 +25,7 @@ test("should set carrier frequency", async () => {
 
 test("can set display mode", async () => {
   const user = userEvent.setup();
-  const result = render(Settings);
+  const result = render(BasicSettings);
 
   const buttons = result.getAllByRole("button");
   const rms = buttons.find(

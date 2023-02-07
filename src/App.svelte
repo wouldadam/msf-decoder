@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy, setContext } from "svelte";
   import {
+    analyserConfig,
     audio,
     audioSource,
     carrierFrequencyHz,
@@ -24,6 +25,7 @@
     playback,
     audio,
     displayMode,
+    analyserConfig,
     timeStore,
     eventStore
   );

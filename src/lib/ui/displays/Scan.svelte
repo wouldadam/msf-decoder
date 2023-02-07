@@ -39,7 +39,7 @@
       dBMin = analyser.minDecibels;
       dBMax = analyser.maxDecibels;
 
-      if (!buffer) {
+      if (!buffer || buffer.length != bins) {
         buffer = new Uint8Array(bins);
       }
       analyser.getByteFrequencyData(buffer);

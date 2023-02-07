@@ -4,7 +4,12 @@ import {
   type Unsubscriber,
   type Writable,
 } from "svelte/store";
-import type { DisplayMode, OnOffState, PlaybackState } from "../config";
+import type {
+  AnalyserConfig,
+  DisplayMode,
+  OnOffState,
+  PlaybackState,
+} from "../config";
 import { ComparatorNode } from "./worklets/ComparatorNode";
 import { MSFNode } from "./worklets/MSFNode";
 import { RMSNode } from "./worklets/RMSNode";
@@ -23,6 +28,8 @@ export class Processor {
   private unsubPlayback: Unsubscriber;
   private unsubAudio: Unsubscriber;
   private unsubDisplayMode: Unsubscriber;
+
+  private unsubAnalyserConfig: Unsubscriber;
 
   private stream?: MediaStream;
   private source?:
@@ -43,6 +50,7 @@ export class Processor {
     private playbackStore: Readable<PlaybackState>,
     private audioStore: Readable<OnOffState>,
     private displayModeStore: Readable<DisplayMode>,
+    private analyserConfigStore: Readable<AnalyserConfig>,
     private timeStore: Writable<TimeStore>,
     private eventStore: Writable<EventStore>
   ) {
@@ -57,6 +65,10 @@ export class Processor {
     this.unsubDisplayMode = displayModeStore.subscribe(
       this.onDisplayModeChange
     );
+
+    this.unsubAnalyserConfig = analyserConfigStore.subscribe(
+      this.updateAnalyserParams
+    );
   }
 
   /** Releases resources. The Processor will no longer be usable. */
@@ -66,6 +78,8 @@ export class Processor {
     this.unsubPlayback();
     this.unsubAudio();
     this.unsubDisplayMode();
+
+    this.unsubAnalyserConfig();
 
     this.stop();
   }
@@ -170,10 +184,7 @@ export class Processor {
     this.comparator.connect(this.msf);
 
     this.analyser = this.context.createAnalyser();
-    this.analyser.maxDecibels = 0;
-    this.analyser.minDecibels = -150;
-    this.analyser.fftSize = 4096;
-    this.analyser.smoothingTimeConstant = 0;
+    this.updateAnalyserParams(get(this.analyserConfigStore));
 
     switch (get(this.displayModeStore)) {
       default:
@@ -191,6 +202,33 @@ export class Processor {
         break;
     }
   }
+
+
+  private updateAnalyserParams = (config: AnalyserConfig) => {
+    if (this.analyser) {
+      this.analyser.fftSize = config.fftSize;
+      this.analyser.smoothingTimeConstant = Math.max(
+        0,
+        Math.min(1, config.smoothingTimeConstant)
+      );
+
+      let minDb = Math.max(-150, Math.min(-31, config.minDecibels));
+      if (minDb === this.analyser.maxDecibels) {
+        minDb -= 1;
+      } else if (minDb > this.analyser.maxDecibels) {
+        minDb = Math.min(-31, this.analyser.maxDecibels - 1);
+      }
+      this.analyser.minDecibels = minDb;
+
+      let maxDb = Math.max(-150, Math.min(0, config.maxDecibels));
+      if (maxDb === this.analyser.minDecibels) {
+        maxDb += 1;
+      } else if (this.analyser.minDecibels > maxDb) {
+        minDb = Math.min(0, this.analyser.minDecibels + 1);
+      }
+      this.analyser.maxDecibels = maxDb;
+    }
+  };
 
   private onAudioSourceChange = () => {
     this.init();

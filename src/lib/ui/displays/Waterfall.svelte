@@ -134,7 +134,7 @@
 
       freqMax = analyser.context.sampleRate / 2;
 
-      if (!buffer) {
+      if (!buffer || buffer.length != bins) {
         buffer = new Uint8Array(bins);
       }
       analyser.getByteFrequencyData(buffer);
