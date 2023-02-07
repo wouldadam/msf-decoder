@@ -8,6 +8,7 @@
     displayMode,
     filterConfig,
     playback,
+    rmsConfig,
   } from "./lib/config";
   import { defaultProcessorKey, Processor } from "./lib/processing/Processor";
   import { eventStore, timeStore } from "./lib/time";
@@ -27,6 +28,7 @@
     audio,
     displayMode,
     filterConfig,
+    rmsConfig,
     analyserConfig,
     timeStore,
     eventStore

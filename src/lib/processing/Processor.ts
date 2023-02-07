@@ -10,6 +10,7 @@ import type {
   FilterConfig,
   OnOffState,
   PlaybackState,
+  RMSConfig,
 } from "../config";
 import { ComparatorNode } from "./worklets/ComparatorNode";
 import { MSFNode } from "./worklets/MSFNode";
@@ -31,6 +32,7 @@ export class Processor {
   private unsubDisplayMode: Unsubscriber;
 
   private unsubFilterConfig: Unsubscriber;
+  private unsubRMSConfig: Unsubscriber;
   private unsubAnalyserConfig: Unsubscriber;
 
   private stream?: MediaStream;
@@ -53,6 +55,7 @@ export class Processor {
     private audioStore: Readable<OnOffState>,
     private displayModeStore: Readable<DisplayMode>,
     private filterConfigStore: Readable<FilterConfig>,
+    private rmsConfigStore: Readable<RMSConfig>,
     private analyserConfigStore: Readable<AnalyserConfig>,
     private timeStore: Writable<TimeStore>,
     private eventStore: Writable<EventStore>
@@ -72,6 +75,7 @@ export class Processor {
     this.unsubFilterConfig = filterConfigStore.subscribe(
       this.updateFilterParams
     );
+    this.unsubRMSConfig = rmsConfigStore.subscribe(this.updateRMSParams);
     this.unsubAnalyserConfig = analyserConfigStore.subscribe(
       this.updateAnalyserParams
     );
@@ -86,6 +90,7 @@ export class Processor {
     this.unsubDisplayMode();
 
     this.unsubFilterConfig();
+    this.unsubRMSConfig();
     this.unsubAnalyserConfig();
 
     this.stop();
@@ -168,9 +173,8 @@ export class Processor {
     this.updateFilterParams(get(this.filterConfigStore));
     this.source.connect(this.filter);
 
-    this.rms = new RMSNode(this.context, {
-      alpha: 0.15,
-    });
+    this.rms = new RMSNode(this.context);
+    this.updateRMSParams(get(this.rmsConfigStore));
     this.filter.connect(this.rms);
 
     this.comparator = new ComparatorNode(this.context, {
@@ -213,6 +217,14 @@ export class Processor {
     if (this.filter) {
       this.filter.type = config.type;
       this.filter.Q.setValueAtTime(config.qValue, this.context.currentTime);
+    }
+  };
+
+  private updateRMSParams = (config: RMSConfig) => {
+    if (this.rms) {
+      this.rms.parameters
+        .get("alpha")
+        .setValueAtTime(config.alpha, this.context.currentTime);
     }
   };
 

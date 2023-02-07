@@ -2,12 +2,14 @@
   import {
     analyserConfig,
     filterConfig,
+    rmsConfig,
   } from "../../config";
   import { advancedSettingsView } from "../state";
 
   const stages = [
     ["analyser", "Analyser"],
     ["filter", "Filter"],
+    ["rms", "RMS"],
   ] as const;
 </script>
 
@@ -138,6 +140,20 @@
           min="0"
           max="1"
           bind:value={$filterConfig.qValue}
+        />
+      </div>
+    </div>
+  {:else if $advancedSettingsView == "rms"}
+    <div class="flex flex-col gap-2">
+      <div>
+        <label class="label label-text-alt" for="rms-alpha">Alpha</label>
+        <input
+          class="input input-sm w-full spin"
+          id="rms-alpha"
+          type="number"
+          min="0"
+          max="1"
+          bind:value={$rmsConfig.alpha}
         />
       </div>
     </div>

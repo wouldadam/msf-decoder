@@ -44,6 +44,16 @@ export const filterConfig: Writable<FilterConfig> = writable({
   qValue: 1,
 });
 
+/// Configuration for the RMS stage of processing
+export interface RMSConfig {
+  /// Contribution of the current sample vs previous samples
+  alpha: number;
+}
+
+export const rmsConfig: Writable<RMSConfig> = writable({
+  alpha: 0.15,
+});
+
 /// Configuration for the analyser stage of processing
 export interface AnalyserConfig {
   minDecibels: number;

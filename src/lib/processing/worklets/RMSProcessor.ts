@@ -1,41 +1,38 @@
-import type { RMSOptions } from "./RMSNode";
-
 const rmsProcessorName = "rms-processor";
-
-interface RMSProcessorOptions extends AudioWorkletNodeOptions {
-  processorOptions: RMSOptions;
-}
 
 /**
  * Calculates RMS of input samples.
  */
 export class RMSProcessor extends AudioWorkletProcessor {
   private avg: number;
-  private beta: number;
 
-  constructor(private options: RMSProcessorOptions) {
+  constructor() {
     super();
 
     this.avg = 0;
-    this.beta = 1 - this.options.processorOptions.alpha;
   }
 
   process(
     inputs: Float32Array[][],
     outputs: Float32Array[][],
-    _parameters: Record<string, Float32Array>
+    parameters: Record<string, Float32Array>
   ): boolean {
     const input = inputs[0][0];
     const output = outputs[0][0];
+    const alpha = parameters["alpha"][0];
+    const beta = 1 - alpha;
 
     for (let sampleIdx = 0; sampleIdx < input.length; ++sampleIdx) {
       const magSquared = input[sampleIdx] * input[sampleIdx];
-      this.avg =
-        this.beta * this.avg + this.options.processorOptions.alpha * magSquared;
+      this.avg = beta * this.avg + alpha * magSquared;
       output[sampleIdx] = Math.sqrt(this.avg);
     }
 
     return true;
+  }
+
+  static get parameterDescriptors() {
+    return [{ name: "alpha", defaultValue: 0.15, minValue: 0, maxValue: 1 }];
   }
 }
 

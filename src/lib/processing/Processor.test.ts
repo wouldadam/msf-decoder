@@ -14,6 +14,7 @@ function createProcessor() {
     type: "bandpass" as BiquadFilterType,
     qValue: 1,
   });
+  const rmsConfigStore = writable({ alpha: 0.15 });
   const analyserConfigStore = writable({
     minDecibels: -100,
     maxDecibels: 0,
@@ -35,6 +36,7 @@ function createProcessor() {
     audioStore,
     displayModeStore,
     filterConfigStore,
+    rmsConfigStore,
     analyserConfigStore,
     timeStore,
     eventStore
