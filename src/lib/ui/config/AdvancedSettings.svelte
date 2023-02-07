@@ -180,7 +180,9 @@
       </div>
 
       <div class="basis-1/2">
-        <label class="label label-text-alt" for="comp-threshold">Q-value</label>
+        <label class="label label-text-alt" for="comp-threshold"
+          >Threshold</label
+        >
         <input
           class="input input-sm w-full"
           id="comp-threshold"
