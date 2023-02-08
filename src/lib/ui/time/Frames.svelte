@@ -1,6 +1,7 @@
 <script lang="ts">
   import { timeStore } from "../../time";
   import { frameView } from "../state";
+  import FrameValueLegend from "./FrameValueLegend.svelte";
   import TimeFrame from "./TimeFrame.svelte";
 </script>
 
@@ -28,6 +29,10 @@
           Current
         </button>
       </div>
+
+      <span class="grow" />
+
+      <FrameValueLegend />
     </h2>
 
     {#if $frameView == "current"}
