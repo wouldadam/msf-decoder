@@ -13,6 +13,8 @@ time signal. MSF is a 60kHz time signal broadcast from Anthorn, UK and receivabl
 across much of Europe. The time is based on time standards maintained by the
 UK's National Physics Laboratory ([NPL](https://www.npl.co.uk/msf-signal)).
 
+<img src="./doc/animation.gif?raw=true" width="500">
+
 ## Design
 
 msf-decoder uses the [Web Audio API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API)
@@ -21,40 +23,6 @@ to implement the decode processing chain, mostly using custom worklets for each 
 The user interface uses the [Svelte](https://svelte.dev/) framework with
 [daisyUI](https://daisyui.com/) on top of [Tailwind CSS](https://tailwindcss.com/)
 for styling.
-
-## Use
-
-**Input**
-
-You're going to need an input signal to decode. If you have you're own receiver
-that can appear as an audio input it'll be selectable in the playback dropdown.
-[vb-cable](https://vb-audio.com/Cable/) can help with getting things piped to
-the right place.
-
-Alternatively, you can capture a signal from a publicly available source such
-as [WebSDR](http://websdr.org/) and use a file as input.
-
-**Carrier**
-
-You'll then need to configure the carrier frequency so we know what to decode.
-Either click on the carrier in the displays to the left or type the frequency
-in the settings box on the right.
-
-**Decode**
-
-The Time panel shows the current date/time based on all of the decoded data.
-
-The Frames panel shows either the current or previously decoded frame (second).
-
-The fields for a frame change colors as we decode the signal:
-
-- Orange means that we've started receiving bits for the field.
-
-- Blue means we've received all of the bits for the field.
-
-- Green means any validation has passed (such as parity checks) for the field.
-
-If anything interesting happens, good or bad, it'll appear in the Events panel.
 
 ## Build
 
@@ -86,3 +54,47 @@ yarn storybook
 # Build a static storybook
 yarn build-storybook
 ```
+
+## Use
+
+**Input**
+
+You're going to need an input signal to decode. If you have you're own receiver
+that can appear as an audio input it'll be selectable in the playback dropdown.
+[vb-cable](https://vb-audio.com/Cable/) can help with getting things piped to
+the right place.
+
+<img src="./doc/playback.jpg?raw=true" width="500">
+
+Alternatively, you can capture a signal from a publicly available source such
+as [WebSDR](http://websdr.org/) and use a file as input.
+
+**Carrier**
+
+You'll then need to configure the carrier frequency so we know what to decode.
+Either click on the carrier in the displays to the left or type the frequency
+in the settings box on the right.
+
+<img src="./doc/displays.jpg?raw=true" width="500">
+
+**Decode**
+
+The Time panel shows the current date/time based on all of the decoded data.
+
+<img src="./doc/time.jpg?raw=true" width="500">
+
+The Frames panel shows either the current or previously decoded frame (second).
+
+<img src="./doc/frames.jpg?raw=true" width="500">
+
+The fields for a frame change colors as we decode the signal:
+
+- Orange means that we've started receiving bits for the field.
+
+- Blue means we've received all of the bits for the field.
+
+- Green means any validation has passed (such as parity checks) for the field.
+
+If anything interesting happens, good or bad, it'll appear in the Events panel.
+
+<img src="./doc/events.jpg?raw=true" width="500">
