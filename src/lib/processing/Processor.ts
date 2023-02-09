@@ -149,12 +149,12 @@ export class Processor {
     }
 
     this.context = new AudioContext();
-    this.context.audioWorklet.addModule(rmsProcessorUrl);
-    this.context.audioWorklet.addModule(comparatorProcessorUrl);
-    this.context.audioWorklet.addModule(msfProcessorUrl);
+    await this.context.audioWorklet.addModule(rmsProcessorUrl);
+    await this.context.audioWorklet.addModule(comparatorProcessorUrl);
+    await this.context.audioWorklet.addModule(msfProcessorUrl);
 
     if (get(this.playbackStore) === "pause") {
-      this.context.suspend();
+      await this.context.suspend();
     }
 
     if (audioSource instanceof File) {
