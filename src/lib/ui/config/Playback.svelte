@@ -5,6 +5,7 @@
   import MdVolumeOff from "svelte-icons/md/MdVolumeOff.svelte";
   import MdVolumeUp from "svelte-icons/md/MdVolumeUp.svelte";
   import { get, type Writable } from "svelte/store";
+  import { exampleFiles } from "../../../assets/exampleFiles";
   import { audio, audioSource, playback, type OnOffState } from "../../config";
   import { defaultProcessorKey, Processor } from "../../processing/Processor";
 
@@ -82,25 +83,33 @@
 
     <label class="label-text-alt" for="source">Source</label>
     <div class="flex flex-row gap-2" id="source">
-      {#if devices == null}
-        <p>No audio devices available.</p>
-      {:else}
-        <div class="w-full">
-          <select
-            class={"select select-sm w-full"}
-            class:select-warning={!$audioSource}
-            bind:value={$audioSource}
-          >
+      <div class="w-full">
+        <select
+          class={"select select-sm w-full"}
+          class:select-warning={!$audioSource}
+          bind:value={$audioSource}
+        >
+          <optgroup disabled={exampleFiles.length === 0} label="Examples" />
+          {#each exampleFiles as example}
+            <option value={example[1]}>{example[0]}</option>
+          {/each}
+
+          <optgroup label="Devices" />
+          {#if devices === null}
+            <option disabled={true} value="">No audio devices available.</option
+            >
+          {:else}
             {#each devices as device}
               <option value={device}>{device.label}</option>
             {/each}
+          {/if}
 
-            {#if $audioSource instanceof File}
-              <option value={$audioSource}>{$audioSource.name}</option>
-            {/if}
-          </select>
-        </div>
-      {/if}
+          {#if $audioSource instanceof File}
+            <optgroup label="File" />
+            <option value={$audioSource}>{$audioSource.name}</option>
+          {/if}
+        </select>
+      </div>
 
       <label class="btn btn-sm" for="audioFile">...</label>
       <input

@@ -14,7 +14,7 @@ export const carrierFrequencyHz = writable(1000);
 /**
  * The audio source that should be used to pull audio.
  */
-export const audioSource: Writable<MediaDeviceInfo | File | null> =
+export const audioSource: Writable<MediaDeviceInfo | File | string | null> =
   writable(null);
 
 export type PlaybackState = "play" | "pause";

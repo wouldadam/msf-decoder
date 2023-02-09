@@ -49,8 +49,12 @@ test("should list available audioinput devices", async () => {
   const user = userEvent.setup();
   const result = render(Playback);
 
-  // Check audioinput only devices are shown
-  expect(await result.findAllByRole("option")).toHaveLength(2);
+  // Check audioinput devices are shown
+  for (const device of devices) {
+    if (device.kind === "audioinput") {
+      expect(await result.findByText(device.label)).not.toBeNull();
+    }
+  }
 
   // Pick an option
   await user.selectOptions(result.getByRole("combobox"), ["Device B"]);
@@ -59,12 +63,11 @@ test("should list available audioinput devices", async () => {
   expect(get(audioSource)).toHaveProperty("deviceId", "B");
 });
 
-test("should handle missing audioinput devices", () => {
+test("should handle missing audioinput devices", async () => {
   setupAudioDevices([]);
 
   const result = render(Playback);
 
-  expect(result.queryByRole("option")).toBeNull();
   expect(result.getByText("No audio devices available."));
 });
 

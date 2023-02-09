@@ -42,6 +42,7 @@ export class Processor {
   private stream?: MediaStream;
   private source?:
     | MediaStreamAudioSourceNode
+    | MediaElementAudioSourceNode
     | AudioBufferSourceNode
     | OscillatorNode;
   private filter?: BiquadFilterNode;
@@ -53,7 +54,7 @@ export class Processor {
   public analyser?: AnalyserNode;
 
   constructor(
-    private audioSourceStore: Readable<MediaDeviceInfo | File | null>,
+    private audioSourceStore: Readable<MediaDeviceInfo | File | string | null>,
     private carrierFrequencyStore: Readable<number>,
     private playbackStore: Readable<PlaybackState>,
     private audioStore: Readable<OnOffState>,
@@ -148,72 +149,86 @@ export class Processor {
       return;
     }
 
-    this.context = new AudioContext();
-    await this.context.audioWorklet.addModule(rmsProcessorUrl);
-    await this.context.audioWorklet.addModule(comparatorProcessorUrl);
-    await this.context.audioWorklet.addModule(msfProcessorUrl);
+    try {
+      this.context = new AudioContext();
+      await this.context.audioWorklet.addModule(rmsProcessorUrl);
+      await this.context.audioWorklet.addModule(comparatorProcessorUrl);
+      await this.context.audioWorklet.addModule(msfProcessorUrl);
 
-    if (get(this.playbackStore) === "pause") {
-      await this.context.suspend();
-    }
+      if (get(this.playbackStore) === "pause") {
+        await this.context.suspend();
+      }
 
-    if (audioSource instanceof File) {
-      const buffer = await audioSource.arrayBuffer();
-      const audioBuffer = await this.context.decodeAudioData(buffer);
-      this.source = this.context.createBufferSource();
-      this.source.buffer = audioBuffer;
-      this.source.loop = true;
-      this.source.start();
-    } else {
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        audio: { deviceId: audioSource.deviceId },
-        video: false,
-      });
+      if (audioSource instanceof File) {
+        const buffer = await audioSource.arrayBuffer();
+        const audioBuffer = await this.context.decodeAudioData(buffer);
+        this.source = this.context.createBufferSource();
+        this.source.buffer = audioBuffer;
+        this.source.loop = true;
+        this.source.start();
+      } else if (typeof audioSource === "string") {
+        const response = await fetch(audioSource, { method: "GET" });
+        const audioBuffer = await this.context.decodeAudioData(
+          await response.arrayBuffer()
+        );
+        this.source = this.context.createBufferSource();
+        this.source.buffer = audioBuffer;
+        this.source.loop = true;
+        this.source.start();
+      } else {
+        this.stream = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: audioSource.deviceId },
+          video: false,
+        });
 
-      this.source = this.context.createMediaStreamSource(this.stream);
-    }
+        this.source = this.context.createMediaStreamSource(this.stream);
+      }
 
-    if (get(this.audioStore) === "on") {
-      this.source.connect(this.context.destination);
-    }
+      if (get(this.audioStore) === "on") {
+        this.source.connect(this.context.destination);
+      }
 
-    this.filter = this.context.createBiquadFilter();
-    this.filter.frequency.setValueAtTime(
-      get(this.carrierFrequencyStore),
-      this.context.currentTime
-    );
-    this.updateFilterParams(get(this.filterConfigStore));
-    this.source.connect(this.filter);
+      this.filter = this.context.createBiquadFilter();
+      this.filter.frequency.setValueAtTime(
+        get(this.carrierFrequencyStore),
+        this.context.currentTime
+      );
+      this.updateFilterParams(get(this.filterConfigStore));
+      this.source.connect(this.filter);
 
-    this.rms = new RMSNode(this.context);
-    this.updateRMSParams(get(this.rmsConfigStore));
-    this.filter.connect(this.rms);
+      this.rms = new RMSNode(this.context);
+      this.updateRMSParams(get(this.rmsConfigStore));
+      this.filter.connect(this.rms);
 
-    this.comparator = new ComparatorNode(this.context);
-    this.updateComparatorParams(get(this.comparatorConfigStore));
-    this.rms.connect(this.comparator);
+      this.comparator = new ComparatorNode(this.context);
+      this.updateComparatorParams(get(this.comparatorConfigStore));
+      this.rms.connect(this.comparator);
 
-    this.msf = new MSFNode(this.context, this.timeStore, this.eventStore);
-    this.updateMSFParams(get(this.msfConfigStore));
-    this.comparator.connect(this.msf);
+      this.msf = new MSFNode(this.context, this.timeStore, this.eventStore);
+      this.updateMSFParams(get(this.msfConfigStore));
+      this.comparator.connect(this.msf);
 
-    this.analyser = this.context.createAnalyser();
-    this.updateAnalyserParams(get(this.analyserConfigStore));
+      this.analyser = this.context.createAnalyser();
+      this.updateAnalyserParams(get(this.analyserConfigStore));
 
-    switch (get(this.displayModeStore)) {
-      default:
-      case "raw":
-        this.source.connect(this.analyser);
-        break;
-      case "filter":
-        this.filter.connect(this.analyser);
-        break;
-      case "rms":
-        this?.rms?.connect(this.analyser);
-        break;
-      case "comparator":
-        this.comparator.connect(this.analyser);
-        break;
+      switch (get(this.displayModeStore)) {
+        default:
+        case "raw":
+          this.source.connect(this.analyser);
+          break;
+        case "filter":
+          this.filter.connect(this.analyser);
+          break;
+        case "rms":
+          this?.rms?.connect(this.analyser);
+          break;
+        case "comparator":
+          this.comparator.connect(this.analyser);
+          break;
+      }
+    } catch (err) {
+      console.error(err);
+      return;
     }
   }
 
