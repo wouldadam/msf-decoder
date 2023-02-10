@@ -19,9 +19,9 @@ import { MSFNode } from "./worklets/MSFNode";
 import { RMSNode } from "./worklets/RMSNode";
 
 import type { EventStore, TimeStore } from "../time";
-import comparatorProcessorUrl from "./worklets/ComparatorProcessor.ts?url";
-import msfProcessorUrl from "./worklets/MSFProcessor.ts?url";
-import rmsProcessorUrl from "./worklets/RMSProcessor.ts?url";
+import comparatorProcessorUrl from "./worklets/ComparatorProcessor.ts?worker&url";
+import msfProcessorUrl from "./worklets/MSFProcessor.ts?worker&url";
+import rmsProcessorUrl from "./worklets/RMSProcessor.ts?worker&url";
 
 /**
  * Manages the processing of a selected audio stream.
@@ -227,7 +227,7 @@ export class Processor {
           break;
       }
     } catch (err) {
-      console.error(err);
+      console.error("Failed to initialize processor", err);
       return;
     }
   }
