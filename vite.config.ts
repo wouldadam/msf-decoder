@@ -31,7 +31,7 @@ const vitestConfig: VitestConfig = {
 };
 
 const config: ViteConfig = {
-  base: "/msf/",
+  base: "/msf-decoder/",
   plugins: [svelte({ hot: !process.env.VITEST })],
 };
 

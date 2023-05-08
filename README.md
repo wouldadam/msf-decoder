@@ -13,6 +13,8 @@ time signal. MSF is a 60kHz time signal broadcast from Anthorn, UK and receivabl
 across much of Europe. The time is based on time standards maintained by the
 UK's National Physics Laboratory ([NPL](https://www.npl.co.uk/msf-signal)).
 
+See it running [here](https://wouldadam.github.io/msf-decoder/).
+
 <img src="./doc/animation.gif?raw=true" width="500">
 
 ## Design
